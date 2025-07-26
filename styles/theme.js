@@ -385,6 +385,407 @@ export const THEME = {
       height: 48,
     },
   },
+
+  // Menu item styles
+  menuItem: {
+    // Default menu item card
+    card: {
+      backgroundColor: COLORS.SURFACE.PRIMARY,
+      borderRadius: BORDER_RADIUS.MD,
+      padding: SPACING.MD,
+      marginVertical: SPACING.SM,
+      ...SHADOWS.SM,
+    },
+    
+    // Menu item image
+    image: {
+      width: 80,
+      height: 80,
+      borderRadius: BORDER_RADIUS.SM,
+      marginRight: SPACING.MD,
+    },
+    
+    // Menu item content
+    content: {
+      flex: 1,
+      justifyContent: 'space-between',
+    },
+    
+    // Menu item title
+    title: {
+      ...TYPOGRAPHY.HEADING.SMALL,
+      color: COLORS.TEXT.PRIMARY,
+      marginBottom: SPACING.XS,
+    },
+    
+    // Menu item description
+    description: {
+      ...TYPOGRAPHY.BODY.SMALL,
+      color: COLORS.TEXT.SECONDARY,
+      marginBottom: SPACING.SM,
+    },
+    
+    // Menu item price
+    price: {
+      ...TYPOGRAPHY.HEADING.SMALL,
+      color: COLORS.PRIMARY.MAIN,
+      fontWeight: 'bold',
+    },
+  },
+
+  // Order styles
+  order: {
+    // Order card
+    card: {
+      backgroundColor: COLORS.SURFACE.PRIMARY,
+      borderRadius: BORDER_RADIUS.MD,
+      padding: SPACING.MD,
+      marginVertical: SPACING.SM,
+      ...SHADOWS.SM,
+    },
+    
+    // Order header
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: SPACING.SM,
+    },
+    
+    // Order number
+    orderNumber: {
+      ...TYPOGRAPHY.HEADING.SMALL,
+      color: COLORS.TEXT.PRIMARY,
+      fontWeight: 'bold',
+    },
+    
+    // Order status
+    status: {
+      paddingVertical: SPACING.XS,
+      paddingHorizontal: SPACING.SM,
+      borderRadius: BORDER_RADIUS.SM,
+    },
+    
+    // Order items list
+    itemsList: {
+      marginVertical: SPACING.SM,
+    },
+    
+    // Order item
+    item: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: SPACING.XS,
+      borderBottomWidth: 1,
+      borderBottomColor: COLORS.BORDER.PRIMARY,
+    },
+    
+    // Order total
+    total: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: SPACING.MD,
+      paddingTop: SPACING.MD,
+      borderTopWidth: 1,
+      borderTopColor: COLORS.BORDER.PRIMARY,
+    },
+  },
+
+  // Dashboard styles
+  dashboard: {
+    // Stats card
+    statsCard: {
+      backgroundColor: COLORS.SURFACE.PRIMARY,
+      borderRadius: BORDER_RADIUS.MD,
+      padding: SPACING.MD,
+      marginVertical: SPACING.SM,
+      ...SHADOWS.SM,
+    },
+    
+    // Stats value
+    statsValue: {
+      ...TYPOGRAPHY.HEADING.LARGE,
+      color: COLORS.PRIMARY.MAIN,
+      fontWeight: 'bold',
+    },
+    
+    // Stats label
+    statsLabel: {
+      ...TYPOGRAPHY.BODY.SMALL,
+      color: COLORS.TEXT.SECONDARY,
+      marginTop: SPACING.XS,
+    },
+    
+    // Quick action button
+    quickAction: {
+      backgroundColor: COLORS.SURFACE.SECONDARY,
+      borderRadius: BORDER_RADIUS.MD,
+      padding: SPACING.MD,
+      alignItems: 'center',
+      justifyContent: 'center',
+      ...SHADOWS.SM,
+    },
+  },
+
+  // Form styles
+  form: {
+    // Form container
+    container: {
+      padding: SPACING.MD,
+    },
+    
+    // Form section
+    section: {
+      marginBottom: SPACING.LG,
+    },
+    
+    // Form section title
+    sectionTitle: {
+      ...TYPOGRAPHY.HEADING.MEDIUM,
+      color: COLORS.TEXT.PRIMARY,
+      marginBottom: SPACING.MD,
+    },
+    
+    // Form row
+    row: {
+      flexDirection: 'row',
+      marginBottom: SPACING.MD,
+    },
+    
+    // Form field
+    field: {
+      marginBottom: SPACING.MD,
+    },
+    
+    // Form label
+    label: {
+      ...TYPOGRAPHY.BODY.MEDIUM,
+      color: COLORS.TEXT.PRIMARY,
+      marginBottom: SPACING.XS,
+      fontWeight: '500',
+    },
+    
+    // Form error
+    error: {
+      ...TYPOGRAPHY.BODY.SMALL,
+      color: COLORS.ERROR.MAIN,
+      marginTop: SPACING.XS,
+    },
+    
+    // Form helper text
+    helper: {
+      ...TYPOGRAPHY.BODY.SMALL,
+      color: COLORS.TEXT.TERTIARY,
+      marginTop: SPACING.XS,
+    },
+  },
+
+  // Modal styles
+  modal: {
+    // Modal overlay
+    overlay: {
+      flex: 1,
+      backgroundColor: COLORS.BACKGROUND.OVERLAY,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    
+    // Modal container
+    container: {
+      backgroundColor: COLORS.SURFACE.PRIMARY,
+      borderRadius: BORDER_RADIUS.LG,
+      padding: SPACING.LG,
+      margin: SPACING.MD,
+      maxWidth: '90%',
+      maxHeight: '80%',
+      ...SHADOWS.XL,
+    },
+    
+    // Modal header
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: SPACING.MD,
+    },
+    
+    // Modal title
+    title: {
+      ...TYPOGRAPHY.HEADING.MEDIUM,
+      color: COLORS.TEXT.PRIMARY,
+      flex: 1,
+    },
+    
+    // Modal close button
+    closeButton: {
+      padding: SPACING.XS,
+    },
+  },
+
+  // List styles
+  list: {
+    // List container
+    container: {
+      backgroundColor: COLORS.SURFACE.PRIMARY,
+      borderRadius: BORDER_RADIUS.MD,
+      ...SHADOWS.SM,
+    },
+    
+    // List item
+    item: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: SPACING.MD,
+      borderBottomWidth: 1,
+      borderBottomColor: COLORS.BORDER.PRIMARY,
+    },
+    
+    // List item content
+    content: {
+      flex: 1,
+      marginLeft: SPACING.MD,
+    },
+    
+    // List item title
+    title: {
+      ...TYPOGRAPHY.BODY.MEDIUM,
+      color: COLORS.TEXT.PRIMARY,
+      marginBottom: SPACING.XS,
+    },
+    
+    // List item subtitle
+    subtitle: {
+      ...TYPOGRAPHY.BODY.SMALL,
+      color: COLORS.TEXT.SECONDARY,
+    },
+    
+    // List item action
+    action: {
+      padding: SPACING.XS,
+    },
+  },
+
+  // Tab styles
+  tab: {
+    // Tab container
+    container: {
+      flexDirection: 'row',
+      backgroundColor: COLORS.SURFACE.SECONDARY,
+      borderRadius: BORDER_RADIUS.MD,
+      padding: SPACING.XS,
+    },
+    
+    // Tab item
+    item: {
+      flex: 1,
+      paddingVertical: SPACING.SM,
+      paddingHorizontal: SPACING.MD,
+      borderRadius: BORDER_RADIUS.SM,
+      alignItems: 'center',
+    },
+    
+    // Active tab item
+    active: {
+      backgroundColor: COLORS.PRIMARY.MAIN,
+    },
+    
+    // Tab label
+    label: {
+      ...TYPOGRAPHY.BODY.SMALL,
+      color: COLORS.TEXT.SECONDARY,
+    },
+    
+    // Active tab label
+    activeLabel: {
+      color: COLORS.PRIMARY.CONTRAST,
+      fontWeight: '500',
+    },
+  },
+
+  // Search styles
+  search: {
+    // Search container
+    container: {
+      backgroundColor: COLORS.SURFACE.PRIMARY,
+      borderRadius: BORDER_RADIUS.MD,
+      paddingHorizontal: SPACING.MD,
+      paddingVertical: SPACING.SM,
+      marginBottom: SPACING.MD,
+      ...SHADOWS.SM,
+    },
+    
+    // Search input
+    input: {
+      flex: 1,
+      ...TYPOGRAPHY.BODY.MEDIUM,
+      color: COLORS.TEXT.PRIMARY,
+    },
+    
+    // Search icon
+    icon: {
+      marginRight: SPACING.SM,
+      color: COLORS.TEXT.TERTIARY,
+    },
+  },
+
+  // Empty state styles
+  emptyState: {
+    // Empty state container
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: SPACING.XL,
+    },
+    
+    // Empty state icon
+    icon: {
+      width: 64,
+      height: 64,
+      marginBottom: SPACING.MD,
+      opacity: 0.5,
+    },
+    
+    // Empty state title
+    title: {
+      ...TYPOGRAPHY.HEADING.MEDIUM,
+      color: COLORS.TEXT.SECONDARY,
+      marginBottom: SPACING.SM,
+      textAlign: 'center',
+    },
+    
+    // Empty state description
+    description: {
+      ...TYPOGRAPHY.BODY.MEDIUM,
+      color: COLORS.TEXT.TERTIARY,
+      textAlign: 'center',
+      marginBottom: SPACING.LG,
+    },
+  },
+
+  // Loading styles
+  loading: {
+    // Loading container
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: SPACING.XL,
+    },
+    
+    // Loading spinner
+    spinner: {
+      marginBottom: SPACING.MD,
+    },
+    
+    // Loading text
+    text: {
+      ...TYPOGRAPHY.BODY.MEDIUM,
+      color: COLORS.TEXT.SECONDARY,
+    },
+  },
 };
 
 export default THEME; 

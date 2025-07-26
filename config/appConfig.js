@@ -139,6 +139,108 @@ export const APP_CONFIG = {
     MENU_ITEM_SAVED: 'Menu item saved successfully!',
     PROFILE_UPDATED: 'Profile updated successfully!',
     SETTINGS_SAVED: 'Settings saved successfully!',
+    CATEGORY_CREATED: 'Category created successfully!',
+    CATEGORY_UPDATED: 'Category updated successfully!',
+    CATEGORY_DELETED: 'Category deleted successfully!',
+    INVENTORY_UPDATED: 'Inventory updated successfully!',
+    PAYMENT_PROCESSED: 'Payment processed successfully!',
+    NOTIFICATION_SETTINGS_UPDATED: 'Notification settings updated!',
+  },
+
+  // Cache Configuration
+  CACHE: {
+    ENABLED: true,
+    DEFAULT_TTL: 5 * 60 * 1000, // 5 minutes
+    LONG_TTL: 30 * 60 * 1000, // 30 minutes
+    VERY_LONG_TTL: 24 * 60 * 60 * 1000, // 24 hours
+    MAX_SIZE: 50, // Maximum number of cached items
+  },
+
+  // Performance Configuration
+  PERFORMANCE: {
+    IMAGE_COMPRESSION_QUALITY: 0.8,
+    LAZY_LOADING_ENABLED: true,
+    VIRTUAL_SCROLLING_ENABLED: true,
+    DEBOUNCE_DELAY: 300,
+    THROTTLE_DELAY: 100,
+  },
+
+  // Security Configuration
+  SECURITY: {
+    SESSION_TIMEOUT: 30 * 60 * 1000, // 30 minutes
+    MAX_LOGIN_ATTEMPTS: 5,
+    LOCKOUT_DURATION: 15 * 60 * 1000, // 15 minutes
+    PASSWORD_EXPIRY_DAYS: 90,
+    REQUIRE_2FA: false,
+    ENCRYPT_SENSITIVE_DATA: true,
+  },
+
+  // Analytics Configuration
+  ANALYTICS: {
+    ENABLED: true,
+    TRACK_EVENTS: true,
+    TRACK_SCREENS: true,
+    TRACK_USER_ACTIONS: true,
+    SESSION_TIMEOUT: 30 * 60 * 1000, // 30 minutes
+    BATCH_SIZE: 10,
+    FLUSH_INTERVAL: 60 * 1000, // 1 minute
+  },
+
+  // Localization Configuration
+  LOCALIZATION: {
+    DEFAULT_LANGUAGE: 'en',
+    SUPPORTED_LANGUAGES: ['en', 'es', 'fr', 'de', 'zh', 'ja', 'ko'],
+    FALLBACK_LANGUAGE: 'en',
+    DATE_FORMAT: 'MM/DD/YYYY',
+    TIME_FORMAT: 'HH:mm',
+    CURRENCY_FORMAT: 'USD',
+  },
+
+  // Offline Configuration
+  OFFLINE: {
+    ENABLED: true,
+    SYNC_INTERVAL: 5 * 60 * 1000, // 5 minutes
+    MAX_OFFLINE_ORDERS: 50,
+    MAX_OFFLINE_DATA_SIZE: 10 * 1024 * 1024, // 10MB
+    AUTO_SYNC_ON_CONNECT: true,
+  },
+
+  // Push Notification Configuration
+  PUSH_NOTIFICATIONS: {
+    ENABLED: true,
+    SOUND_ENABLED: true,
+    VIBRATION_ENABLED: true,
+    BADGE_ENABLED: true,
+    ALERT_ENABLED: true,
+    RETRY_ATTEMPTS: 3,
+    RETRY_DELAY: 1000,
+  },
+
+  // Deep Linking Configuration
+  DEEP_LINKING: {
+    ENABLED: true,
+    SCHEME: 'cravekitchen',
+    HOST: 'vendor',
+    PREFIXES: ['cravekitchen://', 'https://cravekitchen.com'],
+  },
+
+  // Environment Configuration
+  ENVIRONMENT: {
+    DEVELOPMENT: {
+      API_BASE_URL: 'https://dev-api.cravekitchen.com/v1',
+      LOG_LEVEL: 'debug',
+      MOCK_DATA_ENABLED: true,
+    },
+    STAGING: {
+      API_BASE_URL: 'https://staging-api.cravekitchen.com/v1',
+      LOG_LEVEL: 'info',
+      MOCK_DATA_ENABLED: false,
+    },
+    PRODUCTION: {
+      API_BASE_URL: 'https://api.cravekitchen.com/v1',
+      LOG_LEVEL: 'error',
+      MOCK_DATA_ENABLED: false,
+    },
   },
 };
 

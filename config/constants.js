@@ -209,6 +209,156 @@ export const APP_CONSTANTS = {
     NO_NOTIFICATIONS: 'No notifications',
     NO_ANALYTICS: 'No analytics data available',
     NO_INVENTORY: 'No inventory items found',
+    NO_CATEGORIES: 'No categories found',
+    NO_PAYMENTS: 'No payments found',
+    NO_CUSTOMERS: 'No customers found',
+    NO_REPORTS: 'No reports available',
+  },
+
+  // Business Hours
+  BUSINESS_HOURS: {
+    DEFAULT_OPEN: '08:00',
+    DEFAULT_CLOSE: '22:00',
+    BREAK_START: '14:00',
+    BREAK_END: '16:00',
+    DAYS_OF_WEEK: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+  },
+
+  // Menu Categories
+  MENU_CATEGORIES: {
+    APPETIZERS: 'appetizers',
+    MAIN_COURSE: 'main_course',
+    DESSERTS: 'desserts',
+    BEVERAGES: 'beverages',
+    SIDES: 'sides',
+    SALADS: 'salads',
+    SOUPS: 'soups',
+    SANDWICHES: 'sandwiches',
+    PIZZA: 'pizza',
+    BURGERS: 'burgers',
+    PASTA: 'pasta',
+    SEAFOOD: 'seafood',
+    VEGETARIAN: 'vegetarian',
+    VEGAN: 'vegan',
+    GLUTEN_FREE: 'gluten_free',
+  },
+
+  // Payment Methods
+  PAYMENT_METHODS: {
+    CASH: 'cash',
+    CREDIT_CARD: 'credit_card',
+    DEBIT_CARD: 'debit_card',
+    DIGITAL_WALLET: 'digital_wallet',
+    BANK_TRANSFER: 'bank_transfer',
+    CRYPTO: 'crypto',
+  },
+
+  // Order Types
+  ORDER_TYPES: {
+    DINE_IN: 'dine_in',
+    TAKEAWAY: 'takeaway',
+    DELIVERY: 'delivery',
+    PICKUP: 'pickup',
+  },
+
+  // Delivery Zones
+  DELIVERY_ZONES: {
+    LOCAL: 'local',
+    EXTENDED: 'extended',
+    PREMIUM: 'premium',
+  },
+
+  // Tax Rates
+  TAX_RATES: {
+    DEFAULT: 0.08, // 8%
+    FOOD: 0.05, // 5%
+    BEVERAGE: 0.10, // 10%
+    ALCOHOL: 0.15, // 15%
+  },
+
+  // Tip Options
+  TIP_OPTIONS: {
+    NONE: 0,
+    LOW: 0.10, // 10%
+    MEDIUM: 0.15, // 15%
+    HIGH: 0.20, // 20%
+    CUSTOM: 'custom',
+  },
+
+  // Inventory Alerts
+  INVENTORY_ALERTS: {
+    LOW_STOCK_THRESHOLD: 10,
+    CRITICAL_STOCK_THRESHOLD: 5,
+    EXPIRY_WARNING_DAYS: 7,
+    AUTO_REORDER_ENABLED: true,
+  },
+
+  // Analytics Periods
+  ANALYTICS_PERIODS: {
+    TODAY: 'today',
+    YESTERDAY: 'yesterday',
+    THIS_WEEK: 'this_week',
+    LAST_WEEK: 'last_week',
+    THIS_MONTH: 'this_month',
+    LAST_MONTH: 'last_month',
+    THIS_YEAR: 'this_year',
+    LAST_YEAR: 'last_year',
+    CUSTOM: 'custom',
+  },
+
+  // Export Formats
+  EXPORT_FORMATS: {
+    CSV: 'csv',
+    PDF: 'pdf',
+    EXCEL: 'xlsx',
+    JSON: 'json',
+  },
+
+  // Notification Channels
+  NOTIFICATION_CHANNELS: {
+    PUSH: 'push',
+    EMAIL: 'email',
+    SMS: 'sms',
+    IN_APP: 'in_app',
+  },
+
+  // User Roles
+  USER_ROLES: {
+    OWNER: 'owner',
+    MANAGER: 'manager',
+    STAFF: 'staff',
+    VIEWER: 'viewer',
+  },
+
+  // Permissions
+  PERMISSIONS: {
+    VIEW_ORDERS: 'view_orders',
+    MANAGE_ORDERS: 'manage_orders',
+    VIEW_MENU: 'view_menu',
+    MANAGE_MENU: 'manage_menu',
+    VIEW_INVENTORY: 'view_inventory',
+    MANAGE_INVENTORY: 'manage_inventory',
+    VIEW_ANALYTICS: 'view_analytics',
+    VIEW_FINANCES: 'view_finances',
+    MANAGE_SETTINGS: 'manage_settings',
+    MANAGE_USERS: 'manage_users',
+  },
+
+  // App States
+  APP_STATES: {
+    ACTIVE: 'active',
+    INACTIVE: 'inactive',
+    MAINTENANCE: 'maintenance',
+    SUSPENDED: 'suspended',
+  },
+
+  // Feature Flags
+  FEATURE_FLAGS: {
+    ADVANCED_ANALYTICS: 'advanced_analytics',
+    MULTI_LOCATION: 'multi_location',
+    INTEGRATION_APIS: 'integration_apis',
+    AI_RECOMMENDATIONS: 'ai_recommendations',
+    LOYALTY_PROGRAM: 'loyalty_program',
   },
 };
 

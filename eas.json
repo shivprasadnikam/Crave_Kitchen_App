@@ -1,34 +1,61 @@
 {
   "cli": {
-    "version": ">= 5.2.0"
+    "version": ">= 5.2.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "env": {
+        "ENVIRONMENT": "development",
+        "API_URL": "https://dev-api.cravekitchen.com/v1"
+      },
       "ios": {
-        "resourceClass": "m-medium"
+        "resourceClass": "m-medium",
+        "simulator": true
       },
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug"
       }
     },
     "preview": {
       "distribution": "internal",
+      "env": {
+        "ENVIRONMENT": "staging",
+        "API_URL": "https://staging-api.cravekitchen.com/v1"
+      },
       "ios": {
-        "resourceClass": "m-medium"
+        "resourceClass": "m-medium",
+        "distribution": "internal"
       },
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
       }
     },
     "production": {
+      "env": {
+        "ENVIRONMENT": "production",
+        "API_URL": "https://api.cravekitchen.com/v1"
+      },
       "ios": {
-        "resourceClass": "m-medium"
+        "resourceClass": "m-medium",
+        "distribution": "store"
       },
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "gradleCommand": ":app:bundleRelease"
       }
+    },
+    "staging": {
+      "extends": "production",
+      "env": {
+        "ENVIRONMENT": "staging",
+        "API_URL": "https://staging-api.cravekitchen.com/v1"
+      },
+      "distribution": "internal"
     }
   },
   "submit": {
@@ -36,12 +63,33 @@
       "ios": {
         "appleId": "your-apple-id@example.com",
         "ascAppId": "your-app-store-connect-app-id",
-        "appleTeamId": "your-apple-team-id"
+        "appleTeamId": "your-apple-team-id",
+        "appleIdPassword": "your-app-specific-password"
       },
       "android": {
-        "serviceAccountKeyPath": "./path-to-your-service-account.json",
-        "track": "production"
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "production",
+        "releaseStatus": "completed"
       }
+    },
+    "staging": {
+      "ios": {
+        "appleId": "your-apple-id@example.com",
+        "ascAppId": "your-app-store-connect-app-id",
+        "appleTeamId": "your-apple-team-id",
+        "appleIdPassword": "your-app-specific-password"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "internal",
+        "releaseStatus": "draft"
+      }
+    }
+  },
+  "preview": {
+    "distribution": "internal",
+    "ios": {
+      "simulator": true
     }
   }
 } 

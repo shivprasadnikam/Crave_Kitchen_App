@@ -1,71 +1,78 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { APP_CONSTANTS } from '../config/constants';
-import * as authService from '../services/authService';
+import { authService } from '../services/authService';
 
 // Initial state
 const initialState = {
   isAuthenticated: false,
   user: null,
   token: null,
-  isLoading: true,
+  loading: true,
   error: null,
 };
 
 // Action types
 const AUTH_ACTIONS = {
-  SET_LOADING: 'SET_LOADING',
-  SET_AUTH: 'SET_AUTH',
-  SET_USER: 'SET_USER',
-  SET_ERROR: 'SET_ERROR',
+  LOGIN_START: 'LOGIN_START',
+  LOGIN_SUCCESS: 'LOGIN_SUCCESS',
+  LOGIN_FAILURE: 'LOGIN_FAILURE',
   LOGOUT: 'LOGOUT',
+  UPDATE_USER: 'UPDATE_USER',
   CLEAR_ERROR: 'CLEAR_ERROR',
+  SET_LOADING: 'SET_LOADING',
 };
 
 // Reducer
 const authReducer = (state, action) => {
   switch (action.type) {
-    case AUTH_ACTIONS.SET_LOADING:
+    case AUTH_ACTIONS.LOGIN_START:
       return {
         ...state,
-        isLoading: action.payload,
-      };
-    
-    case AUTH_ACTIONS.SET_AUTH:
-      return {
-        ...state,
-        isAuthenticated: action.payload.isAuthenticated,
-        user: action.payload.user,
-        token: action.payload.token,
-        isLoading: false,
+        loading: true,
         error: null,
       };
-    
-    case AUTH_ACTIONS.SET_USER:
+    case AUTH_ACTIONS.LOGIN_SUCCESS:
       return {
         ...state,
-        user: action.payload,
+        isAuthenticated: true,
+        user: action.payload.user,
+        token: action.payload.token,
+        loading: false,
+        error: null,
       };
-    
-    case AUTH_ACTIONS.SET_ERROR:
+    case AUTH_ACTIONS.LOGIN_FAILURE:
       return {
         ...state,
+        isAuthenticated: false,
+        user: null,
+        token: null,
+        loading: false,
         error: action.payload,
-        isLoading: false,
       };
-    
     case AUTH_ACTIONS.LOGOUT:
       return {
-        ...initialState,
-        isLoading: false,
+        ...state,
+        isAuthenticated: false,
+        user: null,
+        token: null,
+        loading: false,
+        error: null,
       };
-    
+    case AUTH_ACTIONS.UPDATE_USER:
+      return {
+        ...state,
+        user: { ...state.user, ...action.payload },
+      };
     case AUTH_ACTIONS.CLEAR_ERROR:
       return {
         ...state,
         error: null,
       };
-    
+    case AUTH_ACTIONS.SET_LOADING:
+      return {
+        ...state,
+        loading: action.payload,
+      };
     default:
       return state;
   }
@@ -78,221 +85,185 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Initialize auth state on app start
+  // Check for stored authentication on app start
   useEffect(() => {
-    initializeAuth();
+    const checkAuthStatus = async () => {
+      try {
+        const token = await AsyncStorage.getItem('auth_token');
+        const userData = await AsyncStorage.getItem('user_data');
+
+        if (token && userData) {
+          const user = JSON.parse(userData);
+          dispatch({
+            type: AUTH_ACTIONS.LOGIN_SUCCESS,
+            payload: { user, token },
+          });
+        } else {
+          dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
+        }
+      } catch (error) {
+        console.error('Error checking auth status:', error);
+        dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
+      }
+    };
+
+    checkAuthStatus();
   }, []);
 
-  const initializeAuth = async () => {
-    try {
-      dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true });
-      
-      const authState = await authService.initializeAuth();
-      
-      dispatch({
-        type: AUTH_ACTIONS.SET_AUTH,
-        payload: authState,
-      });
-    } catch (error) {
-      console.error('Error initializing auth:', error);
-      dispatch({
-        type: AUTH_ACTIONS.SET_ERROR,
-        payload: 'Failed to initialize authentication',
-      });
-    }
-  };
-
+  // Login function
   const login = async (email, password) => {
     try {
-      dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true });
-      dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
-      
-      const result = await authService.loginVendor(email, password);
-      
+      dispatch({ type: AUTH_ACTIONS.LOGIN_START });
+
+      const response = await authService.login(email, password);
+      const { user, token } = response.data;
+
+      // Store in AsyncStorage
+      await AsyncStorage.setItem('auth_token', token);
+      await AsyncStorage.setItem('user_data', JSON.stringify(user));
+
       dispatch({
-        type: AUTH_ACTIONS.SET_AUTH,
-        payload: {
-          isAuthenticated: true,
-          user: result.user,
-          token: result.token,
-        },
+        type: AUTH_ACTIONS.LOGIN_SUCCESS,
+        payload: { user, token },
       });
-      
-      return result;
+
+      return { success: true };
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Login failed';
+      const errorMessage = error.response?.data?.message || 'Login failed';
       dispatch({
-        type: AUTH_ACTIONS.SET_ERROR,
+        type: AUTH_ACTIONS.LOGIN_FAILURE,
         payload: errorMessage,
       });
-      throw error;
+      return { success: false, error: errorMessage };
     }
   };
 
-  const register = async (vendorData) => {
+  // Register function
+  const register = async (userData) => {
     try {
-      dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true });
-      dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
-      
-      const result = await authService.registerVendor(vendorData);
-      
-      return result;
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Registration failed';
+      dispatch({ type: AUTH_ACTIONS.LOGIN_START });
+
+      const response = await authService.register(userData);
+      const { user, token } = response.data;
+
+      // Store in AsyncStorage
+      await AsyncStorage.setItem('auth_token', token);
+      await AsyncStorage.setItem('user_data', JSON.stringify(user));
+
       dispatch({
-        type: AUTH_ACTIONS.SET_ERROR,
+        type: AUTH_ACTIONS.LOGIN_SUCCESS,
+        payload: { user, token },
+      });
+
+      return { success: true };
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Registration failed';
+      dispatch({
+        type: AUTH_ACTIONS.LOGIN_FAILURE,
         payload: errorMessage,
       });
-      throw error;
-    } finally {
-      dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
+      return { success: false, error: errorMessage };
     }
   };
 
+  // Logout function
   const logout = async () => {
     try {
-      await authService.logoutVendor();
+      // Call logout API
+      await authService.logout();
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('Logout API error:', error);
     } finally {
+      // Clear stored data
+      await AsyncStorage.removeItem('auth_token');
+      await AsyncStorage.removeItem('user_data');
+
       dispatch({ type: AUTH_ACTIONS.LOGOUT });
     }
   };
 
-  const updateProfile = async (profileData) => {
+  // Update user profile
+  const updateUser = async (userData) => {
     try {
-      dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
-      
-      const updatedUser = await authService.updateProfile(profileData);
-      
+      const response = await authService.updateProfile(userData);
+      const updatedUser = response.data;
+
+      // Update stored user data
+      await AsyncStorage.setItem('user_data', JSON.stringify(updatedUser));
+
       dispatch({
-        type: AUTH_ACTIONS.SET_USER,
+        type: AUTH_ACTIONS.UPDATE_USER,
         payload: updatedUser,
       });
-      
-      return updatedUser;
+
+      return { success: true };
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Profile update failed';
-      dispatch({
-        type: AUTH_ACTIONS.SET_ERROR,
-        payload: errorMessage,
-      });
-      throw error;
+      const errorMessage = error.response?.data?.message || 'Update failed';
+      return { success: false, error: errorMessage };
     }
   };
 
-  const changePassword = async (currentPassword, newPassword) => {
-    try {
-      dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
-      
-      const result = await authService.changePassword(currentPassword, newPassword);
-      
-      return result;
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Password change failed';
-      dispatch({
-        type: AUTH_ACTIONS.SET_ERROR,
-        payload: errorMessage,
-      });
-      throw error;
-    }
-  };
-
-  const forgotPassword = async (email) => {
-    try {
-      dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
-      
-      const result = await authService.forgotPassword(email);
-      
-      return result;
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Password reset failed';
-      dispatch({
-        type: AUTH_ACTIONS.SET_ERROR,
-        payload: errorMessage,
-      });
-      throw error;
-    }
-  };
-
-  const resetPassword = async (token, password) => {
-    try {
-      dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
-      
-      const result = await authService.resetPassword(token, password);
-      
-      return result;
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Password reset failed';
-      dispatch({
-        type: AUTH_ACTIONS.SET_ERROR,
-        payload: errorMessage,
-      });
-      throw error;
-    }
-  };
-
-  const verifyEmail = async (token) => {
-    try {
-      dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
-      
-      const result = await authService.verifyEmail(token);
-      
-      return result;
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Email verification failed';
-      dispatch({
-        type: AUTH_ACTIONS.SET_ERROR,
-        payload: errorMessage,
-      });
-      throw error;
-    }
-  };
-
+  // Clear error
   const clearError = () => {
     dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
   };
 
-  const refreshUserProfile = async () => {
+  // Forgot password
+  const forgotPassword = async (email) => {
     try {
-      const user = await authService.getCurrentUser();
-      dispatch({
-        type: AUTH_ACTIONS.SET_USER,
-        payload: user,
-      });
-      return user;
+      await authService.forgotPassword(email);
+      return { success: true };
     } catch (error) {
-      console.error('Error refreshing user profile:', error);
-      throw error;
+      const errorMessage = error.response?.data?.message || 'Password reset failed';
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  // Reset password
+  const resetPassword = async (token, newPassword) => {
+    try {
+      await authService.resetPassword(token, newPassword);
+      return { success: true };
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Password reset failed';
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  // Refresh token
+  const refreshToken = async () => {
+    try {
+      const response = await authService.refreshToken();
+      const { token } = response.data;
+
+      await AsyncStorage.setItem('auth_token', token);
+
+      dispatch({
+        type: AUTH_ACTIONS.LOGIN_SUCCESS,
+        payload: { user: state.user, token },
+      });
+
+      return { success: true };
+    } catch (error) {
+      // If refresh fails, logout user
+      await logout();
+      return { success: false };
     }
   };
 
   const value = {
-    // State
-    isAuthenticated: state.isAuthenticated,
-    user: state.user,
-    token: state.token,
-    isLoading: state.isLoading,
-    error: state.error,
-    
-    // Actions
+    ...state,
     login,
     register,
     logout,
-    updateProfile,
-    changePassword,
+    updateUser,
+    clearError,
     forgotPassword,
     resetPassword,
-    verifyEmail,
-    clearError,
-    refreshUserProfile,
+    refreshToken,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 // Custom hook to use auth context
@@ -302,6 +273,4 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
-
-export default AuthContext; 
+}; 

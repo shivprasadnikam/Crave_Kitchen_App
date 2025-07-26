@@ -1,36 +1,35 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_CONFIG, APP_CONSTANTS } from '../config';
-import { showToast } from '../utils/toast';
+import { API_CONFIG } from '../config/apiConfig';
 
 // Create axios instance
-const api = axios.create({
+const apiClient = axios.create({
   baseURL: API_CONFIG.BASE_URL,
   timeout: API_CONFIG.TIMEOUT,
-  headers: API_CONFIG.DEFAULT_HEADERS,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  },
 });
 
 // Request interceptor
-api.interceptors.request.use(
+apiClient.interceptors.request.use(
   async (config) => {
     try {
-      // Get auth token from storage
-      const token = await AsyncStorage.getItem(APP_CONSTANTS.STORAGE_KEYS.AUTH_TOKEN);
-      
+      // Add authentication token
+      const token = await AsyncStorage.getItem('auth_token');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
-      
+
       // Add request timestamp
       config.metadata = { startTime: new Date() };
-      
-      console.log('API Request:', {
-        method: config.method?.toUpperCase(),
-        url: config.url,
-        data: config.data,
-        headers: config.headers,
-      });
-      
+
+      // Add retry count if not present
+      if (!config.retryCount) {
+        config.retryCount = 0;
+      }
+
       return config;
     } catch (error) {
       console.error('Request interceptor error:', error);
@@ -44,347 +43,316 @@ api.interceptors.request.use(
 );
 
 // Response interceptor
-api.interceptors.response.use(
+apiClient.interceptors.response.use(
   (response) => {
+    // Calculate request duration
     const endTime = new Date();
-    const duration = endTime - response.config.metadata?.startTime;
-    
-    console.log('API Response:', {
-      status: response.status,
-      url: response.config.url,
-      duration: `${duration}ms`,
-      data: response.data,
-    });
-    
+    const startTime = response.config.metadata?.startTime;
+    const duration = startTime ? endTime - startTime : 0;
+
+    // Log successful requests in development
+    if (__DEV__) {
+      console.log(`✅ ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status} (${duration}ms)`);
+    }
+
     return response;
   },
   async (error) => {
+    const originalRequest = error.config;
+
+    // Calculate request duration
     const endTime = new Date();
-    const duration = endTime - error.config?.metadata?.startTime;
-    
-    console.error('API Error:', {
-      status: error.response?.status,
-      url: error.config?.url,
-      duration: `${duration}ms`,
-      message: error.message,
-      data: error.response?.data,
-    });
-    
-    // Handle 401 Unauthorized
-    if (error.response?.status === 401) {
+    const startTime = originalRequest?.metadata?.startTime;
+    const duration = startTime ? endTime - startTime : 0;
+
+    // Log errors
+    if (__DEV__) {
+      console.error(`❌ ${originalRequest?.method?.toUpperCase()} ${originalRequest?.url} - ${error.response?.status} (${duration}ms)`, error.response?.data);
+    }
+
+    // Handle 401 Unauthorized - Token expired
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
       try {
         // Try to refresh token
-        const refreshToken = await AsyncStorage.getItem(APP_CONSTANTS.STORAGE_KEYS.REFRESH_TOKEN);
-        
+        const refreshToken = await AsyncStorage.getItem('refresh_token');
         if (refreshToken) {
-          const refreshResponse = await axios.post(
-            `${API_CONFIG.BASE_URL}${API_CONFIG.AUTH.REFRESH_TOKEN}`,
-            { refresh_token: refreshToken }
-          );
-          
-          if (refreshResponse.data.token) {
-            await AsyncStorage.setItem(APP_CONSTANTS.STORAGE_KEYS.AUTH_TOKEN, refreshResponse.data.token);
-            
-            // Retry original request
-            error.config.headers.Authorization = `Bearer ${refreshResponse.data.token}`;
-            return api.request(error.config);
-          }
+          const response = await axios.post(`${API_CONFIG.BASE_URL}/auth/refresh`, {
+            refreshToken,
+          });
+
+          const { token } = response.data;
+          await AsyncStorage.setItem('auth_token', token);
+
+          // Retry original request with new token
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return apiClient(originalRequest);
         }
-        
-        // If refresh fails, clear tokens and redirect to login
-        await AsyncStorage.multiRemove([
-          APP_CONSTANTS.STORAGE_KEYS.AUTH_TOKEN,
-          APP_CONSTANTS.STORAGE_KEYS.REFRESH_TOKEN,
-          APP_CONSTANTS.STORAGE_KEYS.USER_PROFILE,
-        ]);
-        
-        // You can dispatch a logout action here if using Redux
-        // store.dispatch(logout());
-        
       } catch (refreshError) {
-        console.error('Token refresh failed:', refreshError);
-        await AsyncStorage.multiRemove([
-          APP_CONSTANTS.STORAGE_KEYS.AUTH_TOKEN,
-          APP_CONSTANTS.STORAGE_KEYS.REFRESH_TOKEN,
-          APP_CONSTANTS.STORAGE_KEYS.USER_PROFILE,
-        ]);
+        // Refresh failed, clear tokens and redirect to login
+        await AsyncStorage.multiRemove(['auth_token', 'refresh_token', 'user_data']);
+        
+        // You might want to dispatch a logout action here
+        // store.dispatch({ type: 'LOGOUT' });
       }
     }
-    
-    // Handle other errors
-    const errorMessage = getErrorMessage(error);
-    showToast(errorMessage, 'error');
-    
+
+    // Handle retry logic for network errors
+    if (error.code === 'ECONNABORTED' || !error.response) {
+      if (originalRequest.retryCount < API_CONFIG.MAX_RETRIES) {
+        originalRequest.retryCount += 1;
+        
+        // Exponential backoff
+        const delay = Math.pow(2, originalRequest.retryCount) * 1000;
+        
+        return new Promise(resolve => {
+          setTimeout(() => {
+            resolve(apiClient(originalRequest));
+          }, delay);
+        });
+      }
+    }
+
     return Promise.reject(error);
   }
 );
 
-/**
- * Get error message from API error
- * @param {Error} error - Axios error object
- * @returns {string} - Error message
- */
-const getErrorMessage = (error) => {
-  if (error.response?.data?.message) {
-    return error.response.data.message;
-  }
-  
-  if (error.response?.data?.error) {
-    return error.response.data.error;
-  }
-  
-  if (error.message) {
-    return error.message;
-  }
-  
-  return APP_CONSTANTS.ERROR_MESSAGES.UNKNOWN_ERROR;
+// API endpoints
+export const API_ENDPOINTS = {
+  // Authentication
+  AUTH: {
+    LOGIN: '/auth/login',
+    REGISTER: '/auth/register',
+    LOGOUT: '/auth/logout',
+    REFRESH: '/auth/refresh',
+    FORGOT_PASSWORD: '/auth/forgot-password',
+    RESET_PASSWORD: '/auth/reset-password',
+    VERIFY_EMAIL: '/auth/verify-email',
+    UPDATE_PROFILE: '/auth/profile',
+    CHANGE_PASSWORD: '/auth/change-password',
+  },
+
+  // Orders
+  ORDERS: {
+    LIST: '/orders',
+    DETAIL: (id) => `/orders/${id}`,
+    CREATE: '/orders',
+    UPDATE: (id) => `/orders/${id}`,
+    DELETE: (id) => `/orders/${id}`,
+    UPDATE_STATUS: (id) => `/orders/${id}/status`,
+    CANCEL: (id) => `/orders/${id}/cancel`,
+    ACCEPT: (id) => `/orders/${id}/accept`,
+    REJECT: (id) => `/orders/${id}/reject`,
+    MARK_READY: (id) => `/orders/${id}/ready`,
+    MARK_DELIVERED: (id) => `/orders/${id}/delivered`,
+    STATISTICS: '/orders/statistics',
+    HISTORY: '/orders/history',
+  },
+
+  // Menu
+  MENU: {
+    ITEMS: '/menu/items',
+    ITEM_DETAIL: (id) => `/menu/items/${id}`,
+    CREATE_ITEM: '/menu/items',
+    UPDATE_ITEM: (id) => `/menu/items/${id}`,
+    DELETE_ITEM: (id) => `/menu/items/${id}`,
+    TOGGLE_AVAILABILITY: (id) => `/menu/items/${id}/availability`,
+    UPDATE_PRICE: (id) => `/menu/items/${id}/price`,
+    REORDER: '/menu/items/reorder',
+    CATEGORIES: '/menu/categories',
+    CATEGORY_DETAIL: (id) => `/menu/categories/${id}`,
+    CREATE_CATEGORY: '/menu/categories',
+    UPDATE_CATEGORY: (id) => `/menu/categories/${id}`,
+    DELETE_CATEGORY: (id) => `/menu/categories/${id}`,
+    STATISTICS: '/menu/statistics',
+  },
+
+  // Analytics
+  ANALYTICS: {
+    DASHBOARD: '/analytics/dashboard',
+    REVENUE: '/analytics/revenue',
+    ORDERS: '/analytics/orders',
+    CUSTOMERS: '/analytics/customers',
+    MENU: '/analytics/menu',
+    INVENTORY: '/analytics/inventory',
+    PERFORMANCE: '/analytics/performance',
+    REAL_TIME: '/analytics/real-time',
+    TREND: '/analytics/trend',
+    COMPARATIVE: '/analytics/comparative',
+    GENERATE_REPORT: '/analytics/reports',
+    EXPORT: '/analytics/export',
+  },
+
+  // Notifications
+  NOTIFICATIONS: {
+    LIST: '/notifications',
+    DETAIL: (id) => `/notifications/${id}`,
+    MARK_READ: (id) => `/notifications/${id}/read`,
+    MARK_ALL_READ: '/notifications/read-all',
+    DELETE: (id) => `/notifications/${id}`,
+    SETTINGS: '/notifications/settings',
+    UPDATE_SETTINGS: '/notifications/settings',
+    SEND_TEST: '/notifications/test',
+  },
+
+  // Inventory
+  INVENTORY: {
+    LIST: '/inventory',
+    DETAIL: (id) => `/inventory/${id}`,
+    CREATE: '/inventory',
+    UPDATE: (id) => `/inventory/${id}`,
+    DELETE: (id) => `/inventory/${id}`,
+    ADJUST_STOCK: (id) => `/inventory/${id}/adjust`,
+    LOW_STOCK: '/inventory/low-stock',
+    STATISTICS: '/inventory/statistics',
+  },
+
+  // Payments
+  PAYMENTS: {
+    LIST: '/payments',
+    DETAIL: (id) => `/payments/${id}`,
+    CREATE: '/payments',
+    REFUND: (id) => `/payments/${id}/refund`,
+    STATISTICS: '/payments/statistics',
+    PAYOUT: '/payments/payout',
+    PAYOUT_HISTORY: '/payments/payout-history',
+  },
+
+  // Settings
+  SETTINGS: {
+    PROFILE: '/settings/profile',
+    RESTAURANT: '/settings/restaurant',
+    OPERATING_HOURS: '/settings/operating-hours',
+    NOTIFICATIONS: '/settings/notifications',
+    SECURITY: '/settings/security',
+    DISPLAY: '/settings/display',
+  },
+
+  // Upload
+  UPLOAD: {
+    IMAGE: '/upload/image',
+    DOCUMENT: '/upload/document',
+    BULK: '/upload/bulk',
+  },
 };
 
-/**
- * Make GET request
- * @param {string} url - API endpoint
- * @param {object} params - Query parameters
- * @param {object} config - Additional axios config
- * @returns {Promise} - API response
- */
-export const get = async (url, params = {}, config = {}) => {
-  try {
-    const response = await api.get(url, { params, ...config });
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-/**
- * Make POST request
- * @param {string} url - API endpoint
- * @param {object} data - Request data
- * @param {object} config - Additional axios config
- * @returns {Promise} - API response
- */
-export const post = async (url, data = {}, config = {}) => {
-  try {
-    const response = await api.post(url, data, config);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-/**
- * Make PUT request
- * @param {string} url - API endpoint
- * @param {object} data - Request data
- * @param {object} config - Additional axios config
- * @returns {Promise} - API response
- */
-export const put = async (url, data = {}, config = {}) => {
-  try {
-    const response = await api.put(url, data, config);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-/**
- * Make PATCH request
- * @param {string} url - API endpoint
- * @param {object} data - Request data
- * @param {object} config - Additional axios config
- * @returns {Promise} - API response
- */
-export const patch = async (url, data = {}, config = {}) => {
-  try {
-    const response = await api.patch(url, data, config);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-/**
- * Make DELETE request
- * @param {string} url - API endpoint
- * @param {object} config - Additional axios config
- * @returns {Promise} - API response
- */
-export const del = async (url, config = {}) => {
-  try {
-    const response = await api.delete(url, config);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-/**
- * Upload file
- * @param {string} url - API endpoint
- * @param {FormData} formData - Form data with file
- * @param {object} config - Additional axios config
- * @returns {Promise} - API response
- */
-export const uploadFile = async (url, formData, config = {}) => {
-  try {
-    const response = await api.post(url, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      ...config,
-    });
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-/**
- * Download file
- * @param {string} url - API endpoint
- * @param {object} config - Additional axios config
- * @returns {Promise} - File blob
- */
-export const downloadFile = async (url, config = {}) => {
-  try {
-    const response = await api.get(url, {
-      responseType: 'blob',
-      ...config,
-    });
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-/**
- * Make request with retry logic
- * @param {Function} requestFn - Request function to retry
- * @param {number} maxRetries - Maximum number of retries (default: 3)
- * @param {number} delay - Delay between retries in ms (default: 1000)
- * @returns {Promise} - API response
- */
-export const retryRequest = async (requestFn, maxRetries = 3, delay = 1000) => {
-  let lastError;
-  
-  for (let i = 0; i < maxRetries; i++) {
+// API helper functions
+export const api = {
+  // GET request
+  get: async (url, config = {}) => {
     try {
-      return await requestFn();
+      const response = await apiClient.get(url, config);
+      return response.data;
     } catch (error) {
-      lastError = error;
-      
-      // Don't retry on 4xx errors (except 429)
-      if (error.response?.status >= 400 && error.response?.status < 500 && error.response?.status !== 429) {
-        throw error;
-      }
-      
-      // Wait before retrying (except on last attempt)
-      if (i < maxRetries - 1) {
-        await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
-      }
+      throw handleApiError(error);
     }
-  }
-  
-  throw lastError;
+  },
+
+  // POST request
+  post: async (url, data = {}, config = {}) => {
+    try {
+      const response = await apiClient.post(url, data, config);
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  // PUT request
+  put: async (url, data = {}, config = {}) => {
+    try {
+      const response = await apiClient.put(url, data, config);
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  // PATCH request
+  patch: async (url, data = {}, config = {}) => {
+    try {
+      const response = await apiClient.patch(url, data, config);
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  // DELETE request
+  delete: async (url, config = {}) => {
+    try {
+      const response = await apiClient.delete(url, config);
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  // Upload file
+  upload: async (url, formData, config = {}) => {
+    try {
+      const response = await apiClient.post(url, formData, {
+        ...config,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          ...config.headers,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+
+  // Download file
+  download: async (url, config = {}) => {
+    try {
+      const response = await apiClient.get(url, {
+        ...config,
+        responseType: 'blob',
+      });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
-/**
- * Cancel ongoing requests
- * @param {string} requestId - Request ID to cancel
- */
-export const cancelRequest = (requestId) => {
-  // Implementation depends on your needs
-  // You can use AbortController or axios cancel tokens
-};
-
-/**
- * Set auth token
- * @param {string} token - Auth token
- */
-export const setAuthToken = (token) => {
-  if (token) {
-    api.defaults.headers.common.Authorization = `Bearer ${token}`;
+// Error handler
+const handleApiError = (error) => {
+  if (error.response) {
+    // Server responded with error status
+    const { status, data } = error.response;
+    
+    switch (status) {
+      case 400:
+        return new Error(data.message || 'Bad request');
+      case 401:
+        return new Error(data.message || 'Unauthorized');
+      case 403:
+        return new Error(data.message || 'Forbidden');
+      case 404:
+        return new Error(data.message || 'Not found');
+      case 422:
+        return new Error(data.message || 'Validation error');
+      case 429:
+        return new Error(data.message || 'Too many requests');
+      case 500:
+        return new Error(data.message || 'Internal server error');
+      default:
+        return new Error(data.message || `HTTP ${status} error`);
+    }
+  } else if (error.request) {
+    // Network error
+    return new Error('Network error. Please check your connection.');
   } else {
-    delete api.defaults.headers.common.Authorization;
+    // Other error
+    return new Error(error.message || 'An unexpected error occurred');
   }
 };
 
-/**
- * Clear auth token
- */
-export const clearAuthToken = () => {
-  delete api.defaults.headers.common.Authorization;
-};
+// Export the axios instance for direct use if needed
+export { apiClient };
 
-/**
- * Set base URL
- * @param {string} baseURL - New base URL
- */
-export const setBaseURL = (baseURL) => {
-  api.defaults.baseURL = baseURL;
-};
-
-/**
- * Set timeout
- * @param {number} timeout - Timeout in milliseconds
- */
-export const setTimeout = (timeout) => {
-  api.defaults.timeout = timeout;
-};
-
-/**
- * Add request interceptor
- * @param {Function} onFulfilled - Success handler
- * @param {Function} onRejected - Error handler
- * @returns {number} - Interceptor ID
- */
-export const addRequestInterceptor = (onFulfilled, onRejected) => {
-  return api.interceptors.request.use(onFulfilled, onRejected);
-};
-
-/**
- * Add response interceptor
- * @param {Function} onFulfilled - Success handler
- * @param {Function} onRejected - Error handler
- * @returns {number} - Interceptor ID
- */
-export const addResponseInterceptor = (onFulfilled, onRejected) => {
-  return api.interceptors.response.use(onFulfilled, onRejected);
-};
-
-/**
- * Remove request interceptor
- * @param {number} id - Interceptor ID
- */
-export const removeRequestInterceptor = (id) => {
-  api.interceptors.request.eject(id);
-};
-
-/**
- * Remove response interceptor
- * @param {number} id - Interceptor ID
- */
-export const removeResponseInterceptor = (id) => {
-  api.interceptors.response.eject(id);
-};
-
-export default {
-  get,
-  post,
-  put,
-  patch,
-  del,
-  uploadFile,
-  downloadFile,
-  retryRequest,
-  cancelRequest,
-  setAuthToken,
-  clearAuthToken,
-  setBaseURL,
-  setTimeout,
-  addRequestInterceptor,
-  addResponseInterceptor,
-  removeRequestInterceptor,
-  removeResponseInterceptor,
-}; 
+export default api; 

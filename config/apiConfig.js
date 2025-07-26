@@ -149,6 +149,83 @@ export const API_CONFIG = {
     WARNING: 'warning',
     INFO: 'info',
   },
+
+  // Rate Limiting
+  RATE_LIMITING: {
+    REQUESTS_PER_MINUTE: 100,
+    REQUESTS_PER_HOUR: 1000,
+    BURST_LIMIT: 10,
+    RETRY_AFTER_HEADER: 'Retry-After',
+  },
+
+  // Retry Configuration
+  RETRY: {
+    MAX_ATTEMPTS: 3,
+    BASE_DELAY: 1000,
+    MAX_DELAY: 10000,
+    BACKOFF_MULTIPLIER: 2,
+    RETRYABLE_STATUS_CODES: [408, 429, 500, 502, 503, 504],
+  },
+
+  // Timeout Configuration
+  TIMEOUTS: {
+    REQUEST: 30000,
+    UPLOAD: 60000,
+    DOWNLOAD: 120000,
+    WEBSOCKET: 30000,
+  },
+
+  // Authentication
+  AUTH: {
+    TOKEN_REFRESH_THRESHOLD: 5 * 60 * 1000, // 5 minutes before expiry
+    TOKEN_STORAGE_KEY: 'auth_token',
+    REFRESH_TOKEN_STORAGE_KEY: 'refresh_token',
+    TOKEN_TYPE: 'Bearer',
+  },
+
+  // Caching
+  CACHE: {
+    ENABLED: true,
+    DEFAULT_TTL: 5 * 60 * 1000, // 5 minutes
+    MENU_TTL: 30 * 60 * 1000, // 30 minutes
+    ANALYTICS_TTL: 60 * 60 * 1000, // 1 hour
+    USER_PROFILE_TTL: 24 * 60 * 60 * 1000, // 24 hours
+  },
+
+  // Upload Configuration
+  UPLOAD_CONFIG: {
+    CHUNK_SIZE: 1024 * 1024, // 1MB chunks
+    MAX_CONCURRENT_UPLOADS: 3,
+    RETRY_UPLOAD_ATTEMPTS: 3,
+    COMPRESS_IMAGES: true,
+    IMAGE_QUALITY: 0.8,
+  },
+
+  // WebSocket Configuration
+  WEBSOCKET_CONFIG: {
+    RECONNECT_ATTEMPTS: 5,
+    RECONNECT_DELAY: 1000,
+    HEARTBEAT_INTERVAL: 30000,
+    CONNECTION_TIMEOUT: 10000,
+  },
+
+  // API Versioning
+  VERSIONING: {
+    CURRENT_VERSION: 'v1',
+    SUPPORTED_VERSIONS: ['v1'],
+    VERSION_HEADER: 'X-API-Version',
+    DEPRECATION_HEADER: 'X-API-Deprecated',
+  },
+
+  // Monitoring
+  MONITORING: {
+    ENABLED: true,
+    LOG_REQUESTS: true,
+    LOG_RESPONSES: false,
+    LOG_ERRORS: true,
+    PERFORMANCE_TRACKING: true,
+    ERROR_REPORTING: true,
+  },
 };
 
 export default API_CONFIG; 

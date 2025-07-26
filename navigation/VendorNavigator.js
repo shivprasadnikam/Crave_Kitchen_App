@@ -1,86 +1,24 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { THEME } from '../styles/theme';
 
-// Import screens (these will be created later)
-// import VendorDashboardScreen from '../screens/dashboard/VendorDashboardScreen';
-// import OrderListScreen from '../screens/orders/OrderListScreen';
-// import MenuManagementScreen from '../screens/menu/MenuManagementScreen';
-// import AnalyticsDashboardScreen from '../screens/analytics/AnalyticsDashboardScreen';
-// import VendorProfileScreen from '../screens/settings/VendorProfileScreen';
+// Import navigators
+import DashboardNavigator from './DashboardNavigator';
+import OrdersNavigator from './OrdersNavigator';
+import MenuNavigator from './MenuNavigator';
+import AnalyticsNavigator from './AnalyticsNavigator';
+import SettingsNavigator from './SettingsNavigator';
+
+// Import additional screens
+import InventoryScreen from '../screens/inventory/InventoryScreen';
+import RevenueScreen from '../screens/finances/RevenueScreen';
+import HelpCenterScreen from '../screens/support/HelpCenterScreen';
 
 const Tab = createBottomTabNavigator();
-const Stack = createStackNavigator();
+const Drawer = createDrawerNavigator();
 
-// Placeholder Dashboard Screen
-const PlaceholderScreen = ({ title }) => {
-  return (
-    <div style={{ 
-      flex: 1, 
-      justifyContent: 'center', 
-      alignItems: 'center',
-      backgroundColor: THEME.colors.BACKGROUND.PRIMARY,
-      padding: 20
-    }}>
-      <h2 style={{ color: THEME.colors.TEXT.PRIMARY }}>{title}</h2>
-      <p style={{ color: THEME.colors.TEXT.SECONDARY }}>This screen is under development</p>
-    </div>
-  );
-};
-
-const DashboardStack = () => (
-  <Stack.Navigator>
-    <Stack.Screen 
-      name="Dashboard" 
-      component={() => <PlaceholderScreen title="Dashboard" />}
-      options={{ headerShown: false }}
-    />
-  </Stack.Navigator>
-);
-
-const OrdersStack = () => (
-  <Stack.Navigator>
-    <Stack.Screen 
-      name="Orders" 
-      component={() => <PlaceholderScreen title="Orders" />}
-      options={{ headerShown: false }}
-    />
-  </Stack.Navigator>
-);
-
-const MenuStack = () => (
-  <Stack.Navigator>
-    <Stack.Screen 
-      name="Menu" 
-      component={() => <PlaceholderScreen title="Menu Management" />}
-      options={{ headerShown: false }}
-    />
-  </Stack.Navigator>
-);
-
-const AnalyticsStack = () => (
-  <Stack.Navigator>
-    <Stack.Screen 
-      name="Analytics" 
-      component={() => <PlaceholderScreen title="Analytics" />}
-      options={{ headerShown: false }}
-    />
-  </Stack.Navigator>
-);
-
-const SettingsStack = () => (
-  <Stack.Navigator>
-    <Stack.Screen 
-      name="Settings" 
-      component={() => <PlaceholderScreen title="Settings" />}
-      options={{ headerShown: false }}
-    />
-  </Stack.Navigator>
-);
-
-const VendorNavigator = () => {
+const VendorTabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -88,19 +26,19 @@ const VendorNavigator = () => {
           let iconName;
 
           switch (route.name) {
-            case 'DashboardTab':
+            case 'Dashboard':
               iconName = 'dashboard';
               break;
-            case 'OrdersTab':
+            case 'Orders':
               iconName = 'receipt';
               break;
-            case 'MenuTab':
+            case 'Menu':
               iconName = 'restaurant-menu';
               break;
-            case 'AnalyticsTab':
+            case 'Analytics':
               iconName = 'analytics';
               break;
-            case 'SettingsTab':
+            case 'Settings':
               iconName = 'settings';
               break;
             default:
@@ -109,49 +47,119 @@ const VendorNavigator = () => {
 
           return <Icon name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: THEME.colors.PRIMARY.MAIN,
-        tabBarInactiveTintColor: THEME.colors.TEXT.TERTIARY,
+        tabBarActiveTintColor: '#FF6B35',
+        tabBarInactiveTintColor: 'gray',
         tabBarStyle: {
-          backgroundColor: THEME.colors.SURFACE.PRIMARY,
-          borderTopColor: THEME.colors.BORDER.PRIMARY,
+          backgroundColor: '#fff',
           borderTopWidth: 1,
+          borderTopColor: '#e0e0e0',
           paddingBottom: 5,
           paddingTop: 5,
           height: 60,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '500',
         },
         headerShown: false,
       })}
     >
       <Tab.Screen 
-        name="DashboardTab" 
-        component={DashboardStack}
-        options={{ tabBarLabel: 'Dashboard' }}
+        name="Dashboard" 
+        component={DashboardNavigator}
+        options={{
+          title: 'Dashboard',
+        }}
       />
       <Tab.Screen 
-        name="OrdersTab" 
-        component={OrdersStack}
-        options={{ tabBarLabel: 'Orders' }}
+        name="Orders" 
+        component={OrdersNavigator}
+        options={{
+          title: 'Orders',
+        }}
       />
       <Tab.Screen 
-        name="MenuTab" 
-        component={MenuStack}
-        options={{ tabBarLabel: 'Menu' }}
+        name="Menu" 
+        component={MenuNavigator}
+        options={{
+          title: 'Menu',
+        }}
       />
       <Tab.Screen 
-        name="AnalyticsTab" 
-        component={AnalyticsStack}
-        options={{ tabBarLabel: 'Analytics' }}
+        name="Analytics" 
+        component={AnalyticsNavigator}
+        options={{
+          title: 'Analytics',
+        }}
       />
       <Tab.Screen 
-        name="SettingsTab" 
-        component={SettingsStack}
-        options={{ tabBarLabel: 'Settings' }}
+        name="Settings" 
+        component={SettingsNavigator}
+        options={{
+          title: 'Settings',
+        }}
       />
     </Tab.Navigator>
+  );
+};
+
+const VendorNavigator = () => {
+  return (
+    <Drawer.Navigator
+      initialRouteName="Main"
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: '#FF6B35',
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+        drawerActiveTintColor: '#FF6B35',
+        drawerInactiveTintColor: '#666',
+        drawerStyle: {
+          backgroundColor: '#fff',
+          width: 280,
+        },
+      }}
+    >
+      <Drawer.Screen
+        name="Main"
+        component={VendorTabNavigator}
+        options={{
+          title: 'Crave Kitchen',
+          drawerIcon: ({ color, size }) => (
+            <Icon name="restaurant" size={size} color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="Inventory"
+        component={InventoryScreen}
+        options={{
+          title: 'Inventory',
+          drawerIcon: ({ color, size }) => (
+            <Icon name="inventory" size={size} color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="Revenue"
+        component={RevenueScreen}
+        options={{
+          title: 'Revenue',
+          drawerIcon: ({ color, size }) => (
+            <Icon name="attach-money" size={size} color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="Help"
+        component={HelpCenterScreen}
+        options={{
+          title: 'Help & Support',
+          drawerIcon: ({ color, size }) => (
+            <Icon name="help" size={size} color={color} />
+          ),
+        }}
+      />
+    </Drawer.Navigator>
   );
 };
 
