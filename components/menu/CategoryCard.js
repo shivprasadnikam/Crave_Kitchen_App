@@ -6,9 +6,7 @@ import {
   Image,
   StyleSheet,
 } from 'react-native';
-import { colors } from '../../styles/colors';
-import { globalStyles } from '../../styles/globalStyles';
-import { typography } from '../../styles/typography';
+import { THEME } from '../../styles/theme';
 
 const CategoryCard = ({ 
   category, 
@@ -40,7 +38,7 @@ const CategoryCard = ({
   };
 
   const getStatusColor = () => {
-    return isActive ? colors.success : colors.textSecondary;
+    return isActive ? THEME.colors.SUCCESS.MAIN : THEME.colors.TEXT.SECONDARY;
   };
 
   const renderCompactView = () => (
@@ -183,21 +181,21 @@ const CategoryCard = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    marginBottom: 12,
+    backgroundColor: THEME.colors.SURFACE.PRIMARY,
+    borderRadius: THEME.borderRadius.MD,
+    marginBottom: THEME.spacing.MD,
     overflow: 'hidden',
-    ...globalStyles.shadow,
+    ...THEME.shadows.SM,
   },
   selectedCard: {
     borderWidth: 2,
-    borderColor: colors.primary,
+    borderColor: THEME.colors.PRIMARY.MAIN,
   },
   compactCard: {
-    padding: 12,
+    padding: THEME.spacing.MD,
   },
   cardContent: {
-    padding: 16,
+    padding: THEME.spacing.MD,
   },
   compactContent: {
     flexDirection: 'row',
@@ -206,9 +204,9 @@ const styles = StyleSheet.create({
   compactImageContainer: {
     width: 50,
     height: 50,
-    borderRadius: 8,
+    borderRadius: THEME.borderRadius.SM,
     overflow: 'hidden',
-    marginRight: 12,
+    marginRight: THEME.spacing.MD,
   },
   compactImage: {
     width: '100%',
@@ -227,17 +225,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   compactName: {
-    ...typography.body1,
-    color: colors.textPrimary,
+    ...THEME.typography.BODY.MEDIUM,
+    color: THEME.colors.TEXT.PRIMARY,
     fontWeight: '600',
-    marginBottom: 2,
+    marginBottom: THEME.spacing.XS,
   },
   compactItemCount: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
   },
   compactStatus: {
-    marginLeft: 12,
+    marginLeft: THEME.spacing.MD,
   },
   statusDot: {
     width: 8,
@@ -246,46 +244,46 @@ const styles = StyleSheet.create({
   },
   imageSection: {
     position: 'relative',
-    marginBottom: 12,
+    marginBottom: THEME.spacing.MD,
   },
   image: {
     width: '100%',
     height: 150,
-    borderRadius: 8,
+    borderRadius: THEME.borderRadius.SM,
   },
   imagePlaceholder: {
     width: '100%',
     height: 150,
-    borderRadius: 8,
+    borderRadius: THEME.borderRadius.SM,
     justifyContent: 'center',
     alignItems: 'center',
   },
   imagePlaceholderText: {
     fontSize: 36,
-    marginBottom: 8,
+    marginBottom: THEME.spacing.SM,
   },
   imagePlaceholderLabel: {
-    ...typography.body2,
-    color: colors.textSecondary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
   },
   statusBadge: {
     position: 'absolute',
-    top: 8,
-    right: 8,
+    top: THEME.spacing.SM,
+    right: THEME.spacing.SM,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface + 'CC',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    backgroundColor: THEME.colors.SURFACE.PRIMARY + 'CC',
+    paddingHorizontal: THEME.spacing.SM,
+    paddingVertical: THEME.spacing.XS,
+    borderRadius: THEME.borderRadius.ROUND,
   },
   statusText: {
-    ...typography.caption,
+    ...THEME.typography.CAPTION.SMALL,
     fontWeight: '600',
-    marginLeft: 4,
+    marginLeft: THEME.spacing.XS,
   },
   contentSection: {
-    gap: 12,
+    gap: THEME.spacing.MD,
   },
   header: {
     flexDirection: 'row',
@@ -294,80 +292,80 @@ const styles = StyleSheet.create({
   },
   titleSection: {
     flex: 1,
-    marginRight: 12,
+    marginRight: THEME.spacing.MD,
   },
   name: {
-    ...typography.h3,
-    color: colors.textPrimary,
+    ...THEME.typography.HEADING.SMALL,
+    color: THEME.colors.TEXT.PRIMARY,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: THEME.spacing.XS,
   },
   itemCount: {
-    ...typography.body2,
-    color: colors.textSecondary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
   },
   sortOrder: {
-    backgroundColor: colors.primary + '20',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    backgroundColor: THEME.colors.PRIMARY.MAIN + '20',
+    paddingHorizontal: THEME.spacing.SM,
+    paddingVertical: THEME.spacing.XS,
+    borderRadius: THEME.borderRadius.SM,
   },
   sortOrderText: {
-    ...typography.caption,
-    color: colors.primary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.PRIMARY.MAIN,
     fontWeight: '600',
   },
   description: {
-    ...typography.body2,
-    color: colors.textSecondary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     lineHeight: 20,
   },
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 16,
-    backgroundColor: colors.background,
-    borderRadius: 8,
+    paddingVertical: THEME.spacing.MD,
+    backgroundColor: THEME.colors.SURFACE.SECONDARY,
+    borderRadius: THEME.borderRadius.SM,
   },
   emptyStateText: {
-    ...typography.body2,
-    color: colors.textSecondary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     fontStyle: 'italic',
-    marginBottom: 4,
+    marginBottom: THEME.spacing.XS,
   },
   emptyStateSubtext: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
   },
   actionsSection: {
     borderTopWidth: 1,
-    borderTopColor: colors.border,
-    padding: 16,
-    gap: 12,
+    borderTopColor: THEME.colors.BORDER.PRIMARY,
+    padding: THEME.spacing.MD,
+    gap: THEME.spacing.MD,
   },
   actionRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: THEME.spacing.MD,
   },
   actionButton: {
     flex: 1,
-    paddingVertical: 8,
-    borderRadius: 6,
+    paddingVertical: THEME.spacing.SM,
+    borderRadius: THEME.borderRadius.SM,
     alignItems: 'center',
   },
   editButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: THEME.colors.PRIMARY.MAIN,
   },
   editButtonText: {
-    ...typography.body2,
-    color: colors.white,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.NEUTRAL.WHITE,
     fontWeight: '600',
   },
   deleteButton: {
-    backgroundColor: colors.error,
+    backgroundColor: THEME.colors.ERROR.MAIN,
   },
   deleteButtonText: {
-    ...typography.body2,
-    color: colors.white,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.NEUTRAL.WHITE,
     fontWeight: '600',
   },
   reorderSection: {
@@ -376,13 +374,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   reorderLabel: {
-    ...typography.body2,
-    color: colors.textPrimary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.PRIMARY,
     fontWeight: '500',
   },
   reorderButtons: {
     flexDirection: 'row',
-    gap: 8,
+    gap: THEME.spacing.SM,
   },
   reorderButton: {
     width: 32,
@@ -392,14 +390,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   moveUpButton: {
-    backgroundColor: colors.success,
+    backgroundColor: THEME.colors.SUCCESS.MAIN,
   },
   moveDownButton: {
-    backgroundColor: colors.warning,
+    backgroundColor: THEME.colors.WARNING.MAIN,
   },
   reorderButtonText: {
-    ...typography.body1,
-    color: colors.white,
+    ...THEME.typography.BODY.MEDIUM,
+    color: THEME.colors.NEUTRAL.WHITE,
     fontWeight: '600',
   },
 });

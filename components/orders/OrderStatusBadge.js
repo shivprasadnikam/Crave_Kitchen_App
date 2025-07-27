@@ -4,8 +4,7 @@ import {
   Text,
   StyleSheet,
 } from 'react-native';
-import { colors } from '../../styles/colors';
-import { typography } from '../../styles/typography';
+import { THEME } from '../../styles/theme';
 
 const OrderStatusBadge = ({ 
   status, 
@@ -17,79 +16,79 @@ const OrderStatusBadge = ({
       case 'pending':
         return {
           label: 'Pending',
-          color: colors.warning,
+          color: THEME.colors.WARNING.MAIN,
           icon: '⏳',
-          backgroundColor: colors.warning + '20',
+          backgroundColor: THEME.colors.WARNING.MAIN + '20',
         };
       case 'accepted':
         return {
           label: 'Accepted',
-          color: colors.info,
+          color: THEME.colors.INFO.MAIN,
           icon: '✅',
-          backgroundColor: colors.info + '20',
+          backgroundColor: THEME.colors.INFO.MAIN + '20',
         };
       case 'preparing':
         return {
           label: 'Preparing',
-          color: colors.primary,
+          color: THEME.colors.PRIMARY.MAIN,
           icon: '👨‍🍳',
-          backgroundColor: colors.primary + '20',
+          backgroundColor: THEME.colors.PRIMARY.MAIN + '20',
         };
       case 'ready':
         return {
           label: 'Ready',
-          color: colors.success,
+          color: THEME.colors.SUCCESS.MAIN,
           icon: '🎉',
-          backgroundColor: colors.success + '20',
+          backgroundColor: THEME.colors.SUCCESS.MAIN + '20',
         };
       case 'out_for_delivery':
         return {
           label: 'Out for Delivery',
-          color: colors.secondary,
+          color: THEME.colors.SECONDARY.MAIN,
           icon: '🚚',
-          backgroundColor: colors.secondary + '20',
+          backgroundColor: THEME.colors.SECONDARY.MAIN + '20',
         };
       case 'delivered':
         return {
           label: 'Delivered',
-          color: colors.success,
+          color: THEME.colors.SUCCESS.MAIN,
           icon: '📦',
-          backgroundColor: colors.success + '20',
+          backgroundColor: THEME.colors.SUCCESS.MAIN + '20',
         };
       case 'completed':
         return {
           label: 'Completed',
-          color: colors.success,
+          color: THEME.colors.SUCCESS.MAIN,
           icon: '✅',
-          backgroundColor: colors.success + '20',
+          backgroundColor: THEME.colors.SUCCESS.MAIN + '20',
         };
       case 'cancelled':
         return {
           label: 'Cancelled',
-          color: colors.error,
+          color: THEME.colors.ERROR.MAIN,
           icon: '❌',
-          backgroundColor: colors.error + '20',
+          backgroundColor: THEME.colors.ERROR.MAIN + '20',
         };
       case 'rejected':
         return {
           label: 'Rejected',
-          color: colors.error,
+          color: THEME.colors.ERROR.MAIN,
           icon: '🚫',
-          backgroundColor: colors.error + '20',
+          backgroundColor: THEME.colors.ERROR.MAIN + '20',
         };
       case 'expired':
         return {
           label: 'Expired',
-          color: colors.textSecondary,
+          color: THEME.colors.TEXT.SECONDARY,
           icon: '⏰',
-          backgroundColor: colors.textSecondary + '20',
+          backgroundColor: THEME.colors.TEXT.SECONDARY + '20',
         };
       default:
         return {
           label: status || 'Unknown',
-          color: colors.textSecondary,
+          color: THEME.colors.TEXT.SECONDARY,
           icon: '❓',
-          backgroundColor: colors.textSecondary + '20',
+          backgroundColor: THEME.colors.TEXT.SECONDARY + '20',
         };
     }
   };
@@ -149,57 +148,57 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 16,
+    borderRadius: THEME.borderRadius.ROUND,
     borderWidth: 1,
-    paddingHorizontal: 8,
+    paddingHorizontal: THEME.spacing.SM,
   },
   icon: {
-    marginRight: 4,
+    marginRight: THEME.spacing.XS,
   },
   text: {
     fontWeight: '600',
   },
   // Small size
   smallContainer: {
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-    borderRadius: 12,
+    paddingVertical: THEME.spacing.XS,
+    paddingHorizontal: THEME.spacing.XS,
+    borderRadius: THEME.borderRadius.ROUND,
   },
   smallText: {
-    ...typography.caption,
+    ...THEME.typography.CAPTION.SMALL,
     fontSize: 10,
   },
   smallIcon: {
     fontSize: 10,
-    marginRight: 2,
+    marginRight: THEME.spacing.XS,
   },
   // Medium size
   mediumContainer: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 16,
+    paddingVertical: THEME.spacing.XS,
+    paddingHorizontal: THEME.spacing.SM,
+    borderRadius: THEME.borderRadius.ROUND,
   },
   mediumText: {
-    ...typography.caption,
+    ...THEME.typography.CAPTION.SMALL,
     fontSize: 12,
   },
   mediumIcon: {
     fontSize: 12,
-    marginRight: 4,
+    marginRight: THEME.spacing.XS,
   },
   // Large size
   largeContainer: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
+    paddingVertical: THEME.spacing.SM,
+    paddingHorizontal: THEME.spacing.MD,
+    borderRadius: THEME.borderRadius.ROUND,
   },
   largeText: {
-    ...typography.body2,
+    ...THEME.typography.BODY.SMALL,
     fontSize: 14,
   },
   largeIcon: {
     fontSize: 14,
-    marginRight: 6,
+    marginRight: THEME.spacing.SM,
   },
 });
 

@@ -66,18 +66,6 @@ module.exports = function(api) {
       // Logical assignment operators
       '@babel/plugin-proposal-logical-assignment-operators',
       
-      // Pipeline operator
-      '@babel/plugin-proposal-pipeline-operator',
-      
-      // Do expressions
-      '@babel/plugin-proposal-do-expressions',
-      
-      // Function bind
-      '@babel/plugin-proposal-function-bind',
-      
-      // Function sent
-      '@babel/plugin-proposal-function-sent',
-      
       // Export default from
       '@babel/plugin-proposal-export-default-from',
       

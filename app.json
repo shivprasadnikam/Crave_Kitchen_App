@@ -95,27 +95,14 @@
     },
     "updates": {
       "enabled": true,
-      "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/your-project-id-here"
-    },
-    "hooks": {
-      "postPublish": [
-        {
-          "file": "sentry-expo/upload-sourcemaps",
-          "config": {
-            "organization": "your-sentry-org",
-            "project": "crave-kitchen"
-          }
-        }
-      ]
+      "fallbackToCacheTimeout": 0
     },
     "extra": {
       "eas": {
         "projectId": "your-project-id-here"
       },
       "apiUrl": "https://api.cravekitchen.com/v1",
-      "environment": "production",
-      "sentryDsn": "your-sentry-dsn-here"
+      "environment": "production"
     }
   }
 } 

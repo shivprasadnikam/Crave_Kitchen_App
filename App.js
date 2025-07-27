@@ -10,6 +10,7 @@ import { AuthProvider } from './context/AuthContext';
 import { OrderProvider } from './context/OrderContext';
 import { MenuProvider } from './context/MenuContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { AnalyticsProvider } from './context/AnalyticsContext';
 
 // Navigation
 import AuthNavigator from './navigation/AuthNavigator';
@@ -60,17 +61,19 @@ const App = () => {
           <StatusBar style="auto" />
           <NavigationContainer>
             <AuthProvider>
-              <OrderProvider>
-                <MenuProvider>
-                  <NotificationProvider>
-                    {isAuthenticated ? (
-                      <VendorNavigator />
-                    ) : (
-                      <AuthNavigator />
-                    )}
-                  </NotificationProvider>
-                </MenuProvider>
-              </OrderProvider>
+              <AnalyticsProvider>
+                <OrderProvider>
+                  <MenuProvider>
+                    <NotificationProvider>
+                      {isAuthenticated ? (
+                        <VendorNavigator />
+                      ) : (
+                        <AuthNavigator />
+                      )}
+                    </NotificationProvider>
+                  </MenuProvider>
+                </OrderProvider>
+              </AnalyticsProvider>
             </AuthProvider>
           </NavigationContainer>
         </SafeAreaProvider>

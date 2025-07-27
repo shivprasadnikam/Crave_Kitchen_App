@@ -5,9 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import { colors } from '../../styles/colors';
-import { globalStyles } from '../../styles/globalStyles';
-import { typography } from '../../styles/typography';
+import { THEME } from '../../styles/theme';
 import OrderStatusBadge from './OrderStatusBadge';
 import OrderActions from './OrderActions';
 
@@ -38,10 +36,10 @@ const OrderCard = ({
 
   const getPriorityColor = () => {
     switch (priority) {
-      case 'urgent': return colors.error;
-      case 'high': return colors.warning;
-      case 'normal': return colors.success;
-      default: return colors.textSecondary;
+      case 'urgent': return THEME.colors.ERROR.MAIN;
+      case 'high': return THEME.colors.WARNING.MAIN;
+      case 'normal': return THEME.colors.SUCCESS.MAIN;
+      default: return THEME.colors.TEXT.SECONDARY;
     }
   };
 
@@ -127,7 +125,7 @@ const OrderCard = ({
             <Text style={styles.customerPhone}>{customerPhone}</Text>
           </View>
           <View style={styles.orderType}>
-            <Text style={[styles.orderTypeText, { color: isDelivery ? colors.primary : colors.success }]}>
+            <Text style={[styles.orderTypeText, { color: isDelivery ? THEME.colors.PRIMARY.MAIN : THEME.colors.SUCCESS.MAIN }]}>
               {isDelivery ? '🚚 Delivery' : '🏪 Pickup'}
             </Text>
           </View>
@@ -201,23 +199,23 @@ const OrderCard = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    marginBottom: 12,
+    backgroundColor: THEME.colors.SURFACE.PRIMARY,
+    borderRadius: THEME.borderRadius.MD,
+    marginBottom: THEME.spacing.MD,
     overflow: 'hidden',
-    ...globalStyles.shadow,
+    ...THEME.shadows.SM,
   },
   compactCard: {
-    padding: 16,
+    padding: THEME.spacing.MD,
   },
   cardContent: {
-    padding: 16,
+    padding: THEME.spacing.MD,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: THEME.spacing.MD,
   },
   orderInfo: {
     flex: 1,
@@ -225,146 +223,146 @@ const styles = StyleSheet.create({
   orderNumberRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: THEME.spacing.XS,
   },
   orderNumber: {
-    ...typography.h3,
-    color: colors.textPrimary,
+    ...THEME.typography.HEADING.SMALL,
+    color: THEME.colors.TEXT.PRIMARY,
     fontWeight: '600',
-    marginRight: 8,
+    marginRight: THEME.spacing.SM,
   },
   priorityBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: THEME.spacing.SM,
+    paddingVertical: THEME.spacing.XS,
+    borderRadius: THEME.borderRadius.ROUND,
   },
   priorityIcon: {
     fontSize: 12,
-    marginRight: 4,
+    marginRight: THEME.spacing.XS,
   },
   priorityText: {
-    ...typography.caption,
+    ...THEME.typography.CAPTION.SMALL,
     fontWeight: '600',
   },
   orderTime: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
   },
   customerSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
-    paddingBottom: 12,
+    marginBottom: THEME.spacing.MD,
+    paddingBottom: THEME.spacing.MD,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: THEME.colors.BORDER.PRIMARY,
   },
   customerInfo: {
     flex: 1,
   },
   customerName: {
-    ...typography.body1,
-    color: colors.textPrimary,
+    ...THEME.typography.BODY.MEDIUM,
+    color: THEME.colors.TEXT.PRIMARY,
     fontWeight: '600',
-    marginBottom: 2,
+    marginBottom: THEME.spacing.XS,
   },
   customerPhone: {
-    ...typography.body2,
-    color: colors.textSecondary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
   },
   orderType: {
     alignItems: 'flex-end',
   },
   orderTypeText: {
-    ...typography.body2,
+    ...THEME.typography.BODY.SMALL,
     fontWeight: '600',
   },
   itemsSection: {
-    marginBottom: 16,
+    marginBottom: THEME.spacing.MD,
   },
   sectionTitle: {
-    ...typography.body2,
-    color: colors.textPrimary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.PRIMARY,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: THEME.spacing.SM,
   },
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: THEME.spacing.XS,
   },
   itemQuantity: {
-    ...typography.body2,
-    color: colors.primary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.PRIMARY.MAIN,
     fontWeight: '600',
     width: 30,
   },
   itemName: {
-    ...typography.body2,
-    color: colors.textPrimary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.PRIMARY,
     flex: 1,
-    marginLeft: 8,
+    marginLeft: THEME.spacing.SM,
   },
   itemPrice: {
-    ...typography.body2,
-    color: colors.textPrimary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.PRIMARY,
     fontWeight: '600',
   },
   moreItems: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     fontStyle: 'italic',
-    marginTop: 4,
+    marginTop: THEME.spacing.XS,
   },
   addressSection: {
-    marginBottom: 16,
+    marginBottom: THEME.spacing.MD,
   },
   addressText: {
-    ...typography.body2,
-    color: colors.textSecondary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
   },
   instructionsSection: {
-    marginBottom: 16,
+    marginBottom: THEME.spacing.MD,
   },
   instructionsText: {
-    ...typography.body2,
-    color: colors.textSecondary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     fontStyle: 'italic',
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 12,
+    paddingTop: THEME.spacing.MD,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: THEME.colors.BORDER.PRIMARY,
   },
   totalSection: {
     alignItems: 'flex-start',
   },
   totalLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginBottom: 2,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
+    marginBottom: THEME.spacing.XS,
   },
   totalAmount: {
-    ...typography.h3,
-    color: colors.textPrimary,
+    ...THEME.typography.HEADING.SMALL,
+    color: THEME.colors.TEXT.PRIMARY,
     fontWeight: '600',
   },
   estimatedTime: {
     alignItems: 'flex-end',
   },
   estimatedTimeLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginBottom: 2,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
+    marginBottom: THEME.spacing.XS,
   },
   estimatedTimeValue: {
-    ...typography.body2,
-    color: colors.primary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.PRIMARY.MAIN,
     fontWeight: '600',
   },
   // Compact view styles
@@ -372,7 +370,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: THEME.spacing.SM,
   },
   compactRight: {
     alignItems: 'flex-end',
@@ -383,8 +381,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   itemCount: {
-    ...typography.body2,
-    color: colors.textSecondary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
   },
 });
 

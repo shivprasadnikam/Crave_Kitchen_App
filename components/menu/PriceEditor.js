@@ -7,9 +7,7 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
-import { colors } from '../../styles/colors';
-import { globalStyles } from '../../styles/globalStyles';
-import { typography } from '../../styles/typography';
+import { THEME } from '../../styles/theme';
 
 const PriceEditor = ({ 
   price, 
@@ -157,7 +155,7 @@ const PriceEditor = ({
             onChangeText={handlePriceChange}
             placeholder="0.00"
             keyboardType="decimal-pad"
-            placeholderTextColor={colors.textSecondary}
+            placeholderTextColor={THEME.colors.TEXT.SECONDARY}
             maxLength={6}
           />
           <View style={styles.compactEditActions}>
@@ -217,7 +215,7 @@ const PriceEditor = ({
                 onChangeText={handlePriceChange}
                 placeholder="0.00"
                 keyboardType="decimal-pad"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={THEME.colors.TEXT.SECONDARY}
                 maxLength={6}
               />
             </View>
@@ -236,7 +234,7 @@ const PriceEditor = ({
                   onChangeText={handleOriginalPriceChange}
                   placeholder="0.00"
                   keyboardType="decimal-pad"
-                  placeholderTextColor={colors.textSecondary}
+                  placeholderTextColor={THEME.colors.TEXT.SECONDARY}
                   maxLength={6}
                 />
               </View>
@@ -303,172 +301,172 @@ const PriceEditor = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    ...globalStyles.shadow,
+    backgroundColor: THEME.colors.SURFACE.PRIMARY,
+    borderRadius: THEME.borderRadius.MD,
+    padding: THEME.spacing.MD,
+    ...THEME.shadows.SM,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: THEME.spacing.MD,
   },
   title: {
-    ...typography.h3,
-    color: colors.textPrimary,
+    ...THEME.typography.HEADING.SMALL,
+    color: THEME.colors.TEXT.PRIMARY,
     fontWeight: '600',
   },
   editButton: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
+    backgroundColor: THEME.colors.PRIMARY.MAIN,
+    paddingHorizontal: THEME.spacing.MD,
+    paddingVertical: THEME.spacing.SM,
+    borderRadius: THEME.borderRadius.SM,
   },
   editButtonText: {
-    ...typography.body2,
-    color: colors.white,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.NEUTRAL.WHITE,
     fontWeight: '600',
   },
   editMode: {
-    gap: 16,
+    gap: THEME.spacing.MD,
   },
   inputSection: {
-    gap: 8,
+    gap: THEME.spacing.SM,
   },
   inputLabel: {
-    ...typography.body2,
-    color: colors.textPrimary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.PRIMARY,
     fontWeight: '500',
   },
   priceInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.background,
-    borderRadius: 8,
+    backgroundColor: THEME.colors.SURFACE.SECONDARY,
+    borderRadius: THEME.borderRadius.SM,
     borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: 12,
+    borderColor: THEME.colors.BORDER.PRIMARY,
+    paddingHorizontal: THEME.spacing.MD,
   },
   currencySymbol: {
-    ...typography.body1,
-    color: colors.textSecondary,
-    marginRight: 8,
+    ...THEME.typography.BODY.MEDIUM,
+    color: THEME.colors.TEXT.SECONDARY,
+    marginRight: THEME.spacing.SM,
   },
   priceInput: {
     flex: 1,
-    ...typography.body1,
-    color: colors.textPrimary,
-    paddingVertical: 12,
+    ...THEME.typography.BODY.MEDIUM,
+    color: THEME.colors.TEXT.PRIMARY,
+    paddingVertical: THEME.spacing.MD,
   },
   inputError: {
-    borderColor: colors.error,
+    borderColor: THEME.colors.ERROR.MAIN,
   },
   errorText: {
-    ...typography.caption,
-    color: colors.error,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.ERROR.MAIN,
   },
   helperText: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     fontStyle: 'italic',
   },
   discountPreview: {
-    backgroundColor: colors.info + '20',
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: THEME.colors.INFO.MAIN + '20',
+    padding: THEME.spacing.MD,
+    borderRadius: THEME.borderRadius.SM,
     borderLeftWidth: 4,
-    borderLeftColor: colors.info,
+    borderLeftColor: THEME.colors.INFO.MAIN,
   },
   discountLabel: {
-    ...typography.body2,
-    color: colors.info,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.INFO.MAIN,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: THEME.spacing.XS,
   },
   discountText: {
-    ...typography.body2,
-    color: colors.info,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.INFO.MAIN,
   },
   actionButtons: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 8,
+    gap: THEME.spacing.MD,
+    marginTop: THEME.spacing.SM,
   },
   actionButton: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: THEME.spacing.MD,
+    borderRadius: THEME.borderRadius.SM,
     alignItems: 'center',
   },
   saveActionButton: {
-    backgroundColor: colors.success,
+    backgroundColor: THEME.colors.SUCCESS.MAIN,
   },
   saveActionButtonText: {
-    ...typography.body2,
-    color: colors.white,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.NEUTRAL.WHITE,
     fontWeight: '600',
   },
   cancelActionButton: {
-    backgroundColor: colors.surface,
+    backgroundColor: THEME.colors.SURFACE.PRIMARY,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: THEME.colors.BORDER.PRIMARY,
   },
   cancelActionButtonText: {
-    ...typography.body2,
-    color: colors.textPrimary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.PRIMARY,
     fontWeight: '600',
   },
   displayMode: {
-    gap: 12,
+    gap: THEME.spacing.MD,
   },
   priceDisplay: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: THEME.spacing.SM,
   },
   currentPriceLabel: {
-    ...typography.body2,
-    color: colors.textSecondary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
   },
   currentPriceValue: {
-    ...typography.h3,
-    color: colors.textPrimary,
+    ...THEME.typography.HEADING.SMALL,
+    color: THEME.colors.TEXT.PRIMARY,
     fontWeight: '600',
   },
   originalPriceDisplay: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: THEME.spacing.SM,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: THEME.colors.BORDER.PRIMARY,
   },
   originalPriceLabel: {
-    ...typography.body2,
-    color: colors.textSecondary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
   },
   originalPriceValue: {
-    ...typography.body1,
-    color: colors.textSecondary,
+    ...THEME.typography.BODY.MEDIUM,
+    color: THEME.colors.TEXT.SECONDARY,
     textDecorationLine: 'line-through',
   },
   discountDisplay: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: THEME.spacing.SM,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: THEME.colors.BORDER.PRIMARY,
   },
   discountLabel: {
-    ...typography.body2,
-    color: colors.textSecondary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
   },
   discountValue: {
-    ...typography.body1,
-    color: colors.error,
+    ...THEME.typography.BODY.MEDIUM,
+    color: THEME.colors.ERROR.MAIN,
     fontWeight: '600',
   },
   // Compact view styles
@@ -479,35 +477,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   compactPrice: {
-    ...typography.body1,
-    color: colors.textPrimary,
+    ...THEME.typography.BODY.MEDIUM,
+    color: THEME.colors.TEXT.PRIMARY,
     fontWeight: '600',
   },
   compactOriginalPrice: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     textDecorationLine: 'line-through',
   },
   compactEditMode: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: THEME.spacing.SM,
   },
   compactPriceInput: {
     flex: 1,
-    ...typography.body2,
-    color: colors.textPrimary,
-    backgroundColor: colors.background,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.PRIMARY,
+    backgroundColor: THEME.colors.SURFACE.SECONDARY,
     borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    borderColor: THEME.colors.BORDER.PRIMARY,
+    borderRadius: THEME.borderRadius.XS,
+    paddingHorizontal: THEME.spacing.SM,
+    paddingVertical: THEME.spacing.XS,
     textAlign: 'center',
   },
   compactEditActions: {
     flexDirection: 'row',
-    gap: 4,
+    gap: THEME.spacing.XS,
   },
   compactActionButton: {
     width: 24,
@@ -517,19 +515,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   saveButton: {
-    backgroundColor: colors.success,
+    backgroundColor: THEME.colors.SUCCESS.MAIN,
   },
   saveButtonText: {
-    ...typography.caption,
-    color: colors.white,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.NEUTRAL.WHITE,
     fontWeight: '600',
   },
   cancelButton: {
-    backgroundColor: colors.error,
+    backgroundColor: THEME.colors.ERROR.MAIN,
   },
   cancelButtonText: {
-    ...typography.caption,
-    color: colors.white,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.NEUTRAL.WHITE,
     fontWeight: '600',
   },
 });

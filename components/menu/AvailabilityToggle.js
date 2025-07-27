@@ -5,8 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import { colors } from '../../styles/colors';
-import { typography } from '../../styles/typography';
+import { THEME } from '../../styles/theme';
 
 const AvailabilityToggle = ({ 
   isAvailable, 
@@ -84,7 +83,7 @@ const AvailabilityToggle = ({
         {
           width: toggleWidth,
           height: toggleHeight,
-          backgroundColor: isAvailable ? colors.success : colors.border,
+          backgroundColor: isAvailable ? THEME.colors.SUCCESS.MAIN : THEME.colors.BORDER.PRIMARY,
           opacity: disabled ? 0.5 : 1,
         }
       ]}
@@ -120,7 +119,7 @@ const AvailabilityToggle = ({
           styles.label,
           sizeStyles.label,
           {
-            color: isAvailable ? colors.success : colors.textSecondary,
+            color: isAvailable ? THEME.colors.SUCCESS.MAIN : THEME.colors.TEXT.SECONDARY,
             opacity: disabled ? 0.5 : 1,
           }
         ]}>
@@ -139,7 +138,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: THEME.spacing.SM,
   },
   toggle: {
     borderRadius: 20,
@@ -147,9 +146,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
   },
   thumb: {
-    backgroundColor: colors.white,
+    backgroundColor: THEME.colors.NEUTRAL.WHITE,
     borderRadius: 50,
-    shadowColor: colors.textPrimary,
+    shadowColor: THEME.colors.TEXT.PRIMARY,
     shadowOffset: {
       width: 0,
       height: 1,
@@ -163,7 +162,7 @@ const styles = StyleSheet.create({
   },
   // Small size
   smallContainer: {
-    gap: 6,
+    gap: THEME.spacing.XS,
   },
   smallToggle: {
     borderRadius: 9,
@@ -172,12 +171,12 @@ const styles = StyleSheet.create({
     borderRadius: 7,
   },
   smallLabel: {
-    ...typography.caption,
+    ...THEME.typography.CAPTION.SMALL,
     fontSize: 10,
   },
   // Medium size
   mediumContainer: {
-    gap: 8,
+    gap: THEME.spacing.SM,
   },
   mediumToggle: {
     borderRadius: 12,
@@ -186,12 +185,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   mediumLabel: {
-    ...typography.body2,
+    ...THEME.typography.BODY.SMALL,
     fontSize: 12,
   },
   // Large size
   largeContainer: {
-    gap: 12,
+    gap: THEME.spacing.MD,
   },
   largeToggle: {
     borderRadius: 16,
@@ -200,7 +199,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   largeLabel: {
-    ...typography.body1,
+    ...THEME.typography.BODY.MEDIUM,
     fontSize: 14,
   },
 });

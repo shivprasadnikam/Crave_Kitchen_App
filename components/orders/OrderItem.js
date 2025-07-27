@@ -4,8 +4,7 @@ import {
   Text,
   StyleSheet,
 } from 'react-native';
-import { colors } from '../../styles/colors';
-import { typography } from '../../styles/typography';
+import { THEME } from '../../styles/theme';
 
 const OrderItem = ({ 
   item, 
@@ -26,7 +25,7 @@ const OrderItem = ({
   } = item;
 
   const getAvailabilityColor = () => {
-    return isAvailable ? colors.success : colors.error;
+    return isAvailable ? THEME.colors.SUCCESS.MAIN : THEME.colors.ERROR.MAIN;
   };
 
   const getAvailabilityText = () => {
@@ -115,7 +114,7 @@ const OrderItem = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 8,
+    marginBottom: THEME.spacing.SM,
   },
   mainSection: {
     flexDirection: 'row',
@@ -124,11 +123,11 @@ const styles = StyleSheet.create({
   quantitySection: {
     width: 40,
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: THEME.spacing.MD,
   },
   quantity: {
-    ...typography.h3,
-    color: colors.primary,
+    ...THEME.typography.HEADING.SMALL,
+    color: THEME.colors.PRIMARY.MAIN,
     fontWeight: '600',
   },
   itemInfo: {
@@ -138,28 +137,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 4,
+    marginBottom: THEME.spacing.XS,
   },
   name: {
-    ...typography.body1,
-    color: colors.textPrimary,
+    ...THEME.typography.BODY.MEDIUM,
+    color: THEME.colors.TEXT.PRIMARY,
     fontWeight: '600',
     flex: 1,
-    marginRight: 8,
+    marginRight: THEME.spacing.SM,
   },
   availabilityBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: THEME.spacing.SM,
+    paddingVertical: THEME.spacing.XS,
+    borderRadius: THEME.borderRadius.ROUND,
   },
   availabilityText: {
-    ...typography.caption,
+    ...THEME.typography.CAPTION.SMALL,
     fontWeight: '600',
   },
   category: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginBottom: 8,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
+    marginBottom: THEME.spacing.SM,
   },
   priceSection: {
     flexDirection: 'row',
@@ -167,64 +166,64 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   unitPrice: {
-    ...typography.body2,
-    color: colors.textSecondary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
   },
   totalPrice: {
-    ...typography.body1,
-    color: colors.textPrimary,
+    ...THEME.typography.BODY.MEDIUM,
+    color: THEME.colors.TEXT.PRIMARY,
     fontWeight: '600',
   },
   customizationsSection: {
     marginLeft: 52, // Align with item name
-    marginTop: 8,
-    marginBottom: 8,
+    marginTop: THEME.spacing.SM,
+    marginBottom: THEME.spacing.SM,
   },
   customizationRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: THEME.spacing.XS,
   },
   customizationName: {
-    ...typography.body2,
-    color: colors.textSecondary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     flex: 1,
   },
   customizationPrice: {
-    ...typography.body2,
-    color: colors.primary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.PRIMARY.MAIN,
     fontWeight: '600',
   },
   instructionsSection: {
     marginLeft: 52, // Align with item name
-    marginTop: 8,
-    backgroundColor: colors.background,
-    borderRadius: 8,
-    padding: 8,
+    marginTop: THEME.spacing.SM,
+    backgroundColor: THEME.colors.SURFACE.SECONDARY,
+    borderRadius: THEME.borderRadius.SM,
+    padding: THEME.spacing.SM,
   },
   instructionsLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: THEME.spacing.XS,
   },
   instructionsText: {
-    ...typography.body2,
-    color: colors.textPrimary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.PRIMARY,
     fontStyle: 'italic',
   },
   divider: {
     height: 1,
-    backgroundColor: colors.border,
-    marginTop: 12,
+    backgroundColor: THEME.colors.BORDER.PRIMARY,
+    marginTop: THEME.spacing.MD,
   },
   // Compact view styles
   compactContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 4,
+    paddingVertical: THEME.spacing.XS,
   },
   compactMain: {
     flexDirection: 'row',
@@ -232,27 +231,27 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   compactQuantity: {
-    ...typography.body2,
-    color: colors.primary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.PRIMARY.MAIN,
     fontWeight: '600',
     width: 30,
   },
   compactName: {
-    ...typography.body2,
-    color: colors.textPrimary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.PRIMARY,
     flex: 1,
-    marginLeft: 8,
+    marginLeft: THEME.spacing.SM,
   },
   compactPrice: {
-    ...typography.body2,
-    color: colors.textPrimary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.PRIMARY,
     fontWeight: '600',
-    marginLeft: 8,
+    marginLeft: THEME.spacing.SM,
   },
   compactAvailability: {
-    ...typography.caption,
+    ...THEME.typography.CAPTION.SMALL,
     fontWeight: '600',
-    marginLeft: 8,
+    marginLeft: THEME.spacing.SM,
   },
 });
 

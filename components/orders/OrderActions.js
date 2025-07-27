@@ -7,9 +7,7 @@ import {
   Alert,
   Modal,
 } from 'react-native';
-import { colors } from '../../styles/colors';
-import { globalStyles } from '../../styles/globalStyles';
-import { typography } from '../../styles/typography';
+import { THEME } from '../../styles/theme';
 import OrderStatusBadge from './OrderStatusBadge';
 
 const OrderActions = ({ 
@@ -34,11 +32,11 @@ const OrderActions = ({
   const isRejected = status.toLowerCase() === 'rejected';
 
   const statusOptions = [
-    { key: 'accepted', label: 'Accept Order', color: colors.success, icon: '✅' },
-    { key: 'preparing', label: 'Start Preparing', color: colors.primary, icon: '👨‍🍳' },
-    { key: 'ready', label: 'Mark as Ready', color: colors.warning, icon: '🎉' },
-    { key: 'completed', label: 'Complete Order', color: colors.success, icon: '✅' },
-    { key: 'cancelled', label: 'Cancel Order', color: colors.error, icon: '❌' },
+    { key: 'accepted', label: 'Accept Order', color: THEME.colors.SUCCESS.MAIN, icon: '✅' },
+    { key: 'preparing', label: 'Start Preparing', color: THEME.colors.PRIMARY.MAIN, icon: '👨‍🍳' },
+    { key: 'ready', label: 'Mark as Ready', color: THEME.colors.WARNING.MAIN, icon: '🎉' },
+    { key: 'completed', label: 'Complete Order', color: THEME.colors.SUCCESS.MAIN, icon: '✅' },
+    { key: 'cancelled', label: 'Cancel Order', color: THEME.colors.ERROR.MAIN, icon: '❌' },
   ];
 
   const getAvailableStatusOptions = () => {
@@ -233,43 +231,43 @@ const OrderActions = ({
 const styles = StyleSheet.create({
   container: {
     borderTopWidth: 1,
-    borderTopColor: colors.border,
-    padding: 16,
+    borderTopColor: THEME.colors.BORDER.PRIMARY,
+    padding: THEME.spacing.MD,
   },
   acceptRejectContainer: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 12,
+    gap: THEME.spacing.MD,
+    marginBottom: THEME.spacing.MD,
   },
   actionButton: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: THEME.spacing.MD,
+    borderRadius: THEME.borderRadius.SM,
     alignItems: 'center',
-    ...globalStyles.shadow,
+    ...THEME.shadows.SM,
   },
   acceptButton: {
-    backgroundColor: colors.success,
+    backgroundColor: THEME.colors.SUCCESS.MAIN,
   },
   acceptButtonText: {
-    ...typography.body2,
-    color: colors.white,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.NEUTRAL.WHITE,
     fontWeight: '600',
   },
   rejectButton: {
-    backgroundColor: colors.error,
+    backgroundColor: THEME.colors.ERROR.MAIN,
   },
   rejectButtonText: {
-    ...typography.body2,
-    color: colors.white,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.NEUTRAL.WHITE,
     fontWeight: '600',
   },
   statusUpdateButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: THEME.colors.PRIMARY.MAIN,
   },
   statusUpdateButtonText: {
-    ...typography.body2,
-    color: colors.white,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.NEUTRAL.WHITE,
     fontWeight: '600',
   },
   // Modal styles
@@ -278,82 +276,82 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: THEME.spacing.LG,
   },
   modalContent: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: THEME.colors.SURFACE.PRIMARY,
+    borderRadius: THEME.borderRadius.LG,
+    padding: THEME.spacing.LG,
     width: '100%',
     maxWidth: 400,
-    ...globalStyles.shadow,
+    ...THEME.shadows.LG,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: THEME.spacing.LG,
   },
   modalTitle: {
-    ...typography.h3,
-    color: colors.textPrimary,
+    ...THEME.typography.HEADING.SMALL,
+    color: THEME.colors.TEXT.PRIMARY,
     fontWeight: '600',
   },
   closeButton: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: colors.background,
+    backgroundColor: THEME.colors.SURFACE.SECONDARY,
     justifyContent: 'center',
     alignItems: 'center',
   },
   closeButtonText: {
-    ...typography.body1,
-    color: colors.textSecondary,
+    ...THEME.typography.BODY.MEDIUM,
+    color: THEME.colors.TEXT.SECONDARY,
     fontWeight: '600',
   },
   currentStatus: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
-    paddingBottom: 16,
+    marginBottom: THEME.spacing.LG,
+    paddingBottom: THEME.spacing.MD,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: THEME.colors.BORDER.PRIMARY,
   },
   currentStatusLabel: {
-    ...typography.body2,
-    color: colors.textSecondary,
-    marginRight: 12,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
+    marginRight: THEME.spacing.MD,
   },
   statusOptions: {
-    gap: 12,
+    gap: THEME.spacing.MD,
   },
   statusOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
+    padding: THEME.spacing.MD,
+    borderRadius: THEME.borderRadius.MD,
     borderWidth: 2,
-    backgroundColor: colors.background,
+    backgroundColor: THEME.colors.SURFACE.SECONDARY,
   },
   statusOptionIcon: {
     fontSize: 20,
-    marginRight: 12,
+    marginRight: THEME.spacing.MD,
   },
   statusOptionText: {
-    ...typography.body1,
+    ...THEME.typography.BODY.MEDIUM,
     fontWeight: '600',
   },
   updatingContainer: {
     alignItems: 'center',
-    marginTop: 16,
-    paddingTop: 16,
+    marginTop: THEME.spacing.MD,
+    paddingTop: THEME.spacing.MD,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: THEME.colors.BORDER.PRIMARY,
   },
   updatingText: {
-    ...typography.body2,
-    color: colors.textSecondary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     fontStyle: 'italic',
   },
 });
