@@ -50,6 +50,34 @@ export const DELIVERY_ZONE = {
   PREMIUM: 'premium',
 };
 
+// Order Priority Type
+export const ORDER_PRIORITY = {
+  LOW: 'low',
+  NORMAL: 'normal',
+  HIGH: 'high',
+  URGENT: 'urgent',
+};
+
+// Order Source Type
+export const ORDER_SOURCE = {
+  APP: 'app',
+  WEBSITE: 'website',
+  PHONE: 'phone',
+  WALK_IN: 'walk_in',
+  THIRD_PARTY: 'third_party',
+};
+
+// Order Tags Type
+export const ORDER_TAGS = {
+  VIP: 'vip',
+  REGULAR: 'regular',
+  NEW_CUSTOMER: 'new_customer',
+  LARGE_ORDER: 'large_order',
+  SPECIAL_REQUEST: 'special_request',
+  RUSH: 'rush',
+  PRE_ORDER: 'pre_order',
+};
+
 // Order Item Type
 export const OrderItem = {
   id: 'string',
@@ -282,32 +310,100 @@ export const OrderNotification = {
   metadata: 'object?',
 };
 
-// Order Priority Type
-export const ORDER_PRIORITY = {
-  LOW: 'low',
-  NORMAL: 'normal',
-  HIGH: 'high',
-  URGENT: 'urgent',
+// Helper functions for order types
+export const getOrderStatusLabel = (status) => {
+  const statusLabels = {
+    [ORDER_STATUS.PENDING]: 'Pending',
+    [ORDER_STATUS.CONFIRMED]: 'Confirmed',
+    [ORDER_STATUS.PREPARING]: 'Preparing',
+    [ORDER_STATUS.READY]: 'Ready',
+    [ORDER_STATUS.OUT_FOR_DELIVERY]: 'Out for Delivery',
+    [ORDER_STATUS.DELIVERED]: 'Delivered',
+    [ORDER_STATUS.CANCELLED]: 'Cancelled',
+    [ORDER_STATUS.REFUNDED]: 'Refunded',
+  };
+  return statusLabels[status] || 'Unknown';
 };
 
-// Order Source Type
-export const ORDER_SOURCE = {
-  APP: 'app',
-  WEBSITE: 'website',
-  PHONE: 'phone',
-  WALK_IN: 'walk_in',
-  THIRD_PARTY: 'third_party',
+export const getPaymentStatusLabel = (status) => {
+  const statusLabels = {
+    [PAYMENT_STATUS.PENDING]: 'Pending',
+    [PAYMENT_STATUS.PROCESSING]: 'Processing',
+    [PAYMENT_STATUS.COMPLETED]: 'Completed',
+    [PAYMENT_STATUS.FAILED]: 'Failed',
+    [PAYMENT_STATUS.REFUNDED]: 'Refunded',
+    [PAYMENT_STATUS.PARTIALLY_REFUNDED]: 'Partially Refunded',
+  };
+  return statusLabels[status] || 'Unknown';
 };
 
-// Order Tags Type
-export const ORDER_TAGS = {
-  VIP: 'vip',
-  REGULAR: 'regular',
-  NEW_CUSTOMER: 'new_customer',
-  LARGE_ORDER: 'large_order',
-  SPECIAL_REQUEST: 'special_request',
-  RUSH: 'rush',
-  PRE_ORDER: 'pre_order',
+export const getOrderTypeLabel = (type) => {
+  const typeLabels = {
+    [ORDER_TYPE.DINE_IN]: 'Dine In',
+    [ORDER_TYPE.TAKEAWAY]: 'Takeaway',
+    [ORDER_TYPE.DELIVERY]: 'Delivery',
+    [ORDER_TYPE.PICKUP]: 'Pickup',
+  };
+  return typeLabels[type] || 'Unknown';
+};
+
+export const getPaymentMethodLabel = (method) => {
+  const methodLabels = {
+    [PAYMENT_METHOD.CASH]: 'Cash',
+    [PAYMENT_METHOD.CREDIT_CARD]: 'Credit Card',
+    [PAYMENT_METHOD.DEBIT_CARD]: 'Debit Card',
+    [PAYMENT_METHOD.DIGITAL_WALLET]: 'Digital Wallet',
+    [PAYMENT_METHOD.BANK_TRANSFER]: 'Bank Transfer',
+    [PAYMENT_METHOD.CRYPTO]: 'Cryptocurrency',
+  };
+  return methodLabels[method] || 'Unknown';
+};
+
+export const getOrderPriorityLabel = (priority) => {
+  const priorityLabels = {
+    [ORDER_PRIORITY.LOW]: 'Low',
+    [ORDER_PRIORITY.NORMAL]: 'Normal',
+    [ORDER_PRIORITY.HIGH]: 'High',
+    [ORDER_PRIORITY.URGENT]: 'Urgent',
+  };
+  return priorityLabels[priority] || 'Normal';
+};
+
+export const getOrderSourceLabel = (source) => {
+  const sourceLabels = {
+    [ORDER_SOURCE.APP]: 'Mobile App',
+    [ORDER_SOURCE.WEBSITE]: 'Website',
+    [ORDER_SOURCE.PHONE]: 'Phone',
+    [ORDER_SOURCE.WALK_IN]: 'Walk In',
+    [ORDER_SOURCE.THIRD_PARTY]: 'Third Party',
+  };
+  return sourceLabels[source] || 'Unknown';
+};
+
+export const isOrderUrgent = (order) => {
+  const urgentStatuses = [ORDER_STATUS.PENDING, ORDER_STATUS.CONFIRMED];
+  const urgentPriorities = [ORDER_PRIORITY.HIGH, ORDER_PRIORITY.URGENT];
+  
+  return urgentStatuses.includes(order.status) || 
+         urgentPriorities.includes(order.priority) ||
+         order.tags?.includes(ORDER_TAGS.RUSH);
+};
+
+export const canOrderBeCancelled = (order) => {
+  const cancellableStatuses = [
+    ORDER_STATUS.PENDING,
+    ORDER_STATUS.CONFIRMED,
+    ORDER_STATUS.PREPARING
+  ];
+  return cancellableStatuses.includes(order.status);
+};
+
+export const canOrderBeModified = (order) => {
+  const modifiableStatuses = [
+    ORDER_STATUS.PENDING,
+    ORDER_STATUS.CONFIRMED
+  ];
+  return modifiableStatuses.includes(order.status);
 };
 
 // Export all types
@@ -337,4 +433,13 @@ export default {
   OrderTimelineResponse,
   OrderExportRequest,
   OrderNotification,
+  getOrderStatusLabel,
+  getPaymentStatusLabel,
+  getOrderTypeLabel,
+  getPaymentMethodLabel,
+  getOrderPriorityLabel,
+  getOrderSourceLabel,
+  isOrderUrgent,
+  canOrderBeCancelled,
+  canOrderBeModified,
 }; 

@@ -101,7 +101,7 @@
       "eas": {
         "projectId": "your-project-id-here"
       },
-      "apiUrl": "https://api.cravekitchen.com/v1",
+      "apiUrl": "https://api.cravekitchent.com/v1",
       "environment": "production"
     }
   }
