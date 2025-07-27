@@ -4,9 +4,7 @@ import {
   Text,
   StyleSheet,
 } from 'react-native';
-import { colors } from '../../styles/colors';
-import { globalStyles } from '../../styles/globalStyles';
-import { typography } from '../../styles/typography';
+import { THEME } from '../../styles/theme';
 
 const StatsCard = ({
   icon = '📊',
@@ -14,11 +12,11 @@ const StatsCard = ({
   value,
   unit = '',
   trend = null, // { direction: 'up' | 'down', value: number, color: string }
-  backgroundColor = colors.surface,
-  iconBackground = colors.primary + '20',
-  iconColor = colors.primary,
-  valueColor = colors.textPrimary,
-  labelColor = colors.textSecondary,
+  backgroundColor = THEME.colors.SURFACE.PRIMARY,
+  iconBackground = THEME.colors.PRIMARY.MAIN + '20',
+  iconColor = THEME.colors.PRIMARY.MAIN,
+  valueColor = THEME.colors.TEXT.PRIMARY,
+  labelColor = THEME.colors.TEXT.SECONDARY,
   style = {},
   compact = false,
 }) => {
@@ -57,15 +55,15 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
-    padding: 16,
-    ...globalStyles.shadow,
-    marginBottom: 12,
+    borderRadius: THEME.borderRadius.MD,
+    padding: THEME.spacing.MD,
+    ...THEME.shadows.SM,
+    marginBottom: THEME.spacing.MD,
     minWidth: 140,
     maxWidth: 220,
   },
   compactCard: {
-    padding: 10,
+    padding: THEME.spacing.SM,
     minWidth: 100,
     maxWidth: 140,
   },
@@ -75,7 +73,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: THEME.spacing.MD,
   },
   icon: {
     fontSize: 24,
@@ -84,32 +82,32 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   label: {
-    ...typography.caption,
+    ...THEME.typography.CAPTION.SMALL,
     fontWeight: '500',
-    marginBottom: 4,
+    marginBottom: THEME.spacing.XS,
   },
   valueRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: THEME.spacing.SM,
   },
   value: {
-    ...typography.h2,
+    ...THEME.typography.HEADING.MEDIUM,
     fontWeight: '700',
   },
   trendContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 8,
+    marginLeft: THEME.spacing.SM,
   },
   trendIcon: {
     fontSize: 14,
     fontWeight: '700',
   },
   trendValue: {
-    ...typography.body2,
+    ...THEME.typography.BODY.SMALL,
     fontWeight: '600',
-    marginLeft: 2,
+    marginLeft: THEME.spacing.XS,
   },
 });
 

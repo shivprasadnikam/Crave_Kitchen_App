@@ -38,6 +38,11 @@ export const useMenu = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [isBulkEditing, setIsBulkEditing] = useState(false);
 
+  // Constants
+  const AUTO_REFRESH_INTERVAL = 60000; // 1 minute
+  const POPULAR_ITEMS_LIMIT = 5;
+  const LOW_STOCK_THRESHOLD = 10;
+
   // Computed values
   const sortedMenuItems = useMemo(() => {
     let sorted = [...filteredMenuItems];
@@ -107,12 +112,12 @@ export const useMenu = () => {
     // Mock popularity based on creation date (newer items are more popular)
     return [...menuItems]
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-      .slice(0, 5);
+      .slice(0, POPULAR_ITEMS_LIMIT);
   }, [menuItems]);
 
   const lowStockItems = useMemo(() => {
-    // Mock low stock items (items with price < 10)
-    return menuItems.filter(item => item.price < 10);
+    // Mock low stock items (items with price < threshold)
+    return menuItems.filter(item => item.price < LOW_STOCK_THRESHOLD);
   }, [menuItems]);
 
   // Enhanced actions with notifications
@@ -350,7 +355,7 @@ export const useMenu = () => {
       if (!isLoading) {
         fetchMenuItems();
       }
-    }, 60000); // Refresh every minute
+    }, AUTO_REFRESH_INTERVAL);
 
     return () => clearInterval(interval);
   }, [fetchMenuItems, isLoading]);

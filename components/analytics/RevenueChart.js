@@ -6,9 +6,7 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import { colors } from '../../styles/colors';
-import { globalStyles } from '../../styles/globalStyles';
-import { typography } from '../../styles/typography';
+import { THEME } from '../../styles/theme';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -32,11 +30,11 @@ const RevenueChart = ({
   ];
 
   const chartColors = {
-    primary: colors.primary,
-    secondary: colors.secondary,
-    success: colors.success,
-    warning: colors.warning,
-    error: colors.error,
+    primary: THEME.colors.PRIMARY.MAIN,
+    secondary: THEME.colors.SECONDARY.MAIN,
+    success: THEME.colors.SUCCESS.MAIN,
+    warning: THEME.colors.WARNING.MAIN,
+    error: THEME.colors.ERROR.MAIN,
   };
 
   const formatCurrency = (amount) => {
@@ -314,7 +312,7 @@ const RevenueChart = ({
                       backgroundColor: isSelected || isHovered 
                         ? chartColors.primary 
                         : chartColors.success,
-                      borderColor: colors.white,
+                      borderColor: THEME.colors.NEUTRAL.WHITE,
                       borderWidth: isSelected || isHovered ? 3 : 2,
                     }
                   ]}
@@ -415,41 +413,41 @@ const RevenueChart = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    ...globalStyles.shadow,
+    backgroundColor: THEME.colors.SURFACE.PRIMARY,
+    borderRadius: THEME.borderRadius.MD,
+    padding: THEME.spacing.MD,
+    ...THEME.shadows.SM,
   },
   periodSelector: {
     flexDirection: 'row',
-    marginBottom: 16,
-    backgroundColor: colors.background,
-    borderRadius: 8,
-    padding: 4,
+    marginBottom: THEME.spacing.MD,
+    backgroundColor: THEME.colors.SURFACE.SECONDARY,
+    borderRadius: THEME.borderRadius.SM,
+    padding: THEME.spacing.XS,
   },
   periodButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
+    paddingVertical: THEME.spacing.SM,
+    paddingHorizontal: THEME.spacing.MD,
+    borderRadius: THEME.borderRadius.SM,
   },
   activePeriodButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: THEME.colors.PRIMARY.MAIN,
   },
   periodIcon: {
     fontSize: 16,
-    marginRight: 4,
+    marginRight: THEME.spacing.XS,
   },
   periodLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     fontWeight: '500',
   },
   activePeriodLabel: {
-    color: colors.white,
+    color: THEME.colors.NEUTRAL.WHITE,
   },
   chartContainer: {
     flexDirection: 'row',
@@ -458,11 +456,11 @@ const styles = StyleSheet.create({
   yAxis: {
     width: 60,
     justifyContent: 'space-between',
-    paddingRight: 8,
+    paddingRight: THEME.spacing.SM,
   },
   yAxisLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     textAlign: 'right',
   },
   chartArea: {
@@ -481,7 +479,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: colors.border,
+    backgroundColor: THEME.colors.BORDER.PRIMARY,
   },
   barsContainer: {
     flexDirection: 'row',
@@ -492,7 +490,7 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   bar: {
-    borderRadius: 4,
+    borderRadius: THEME.borderRadius.XS,
     justifyContent: 'flex-end',
     position: 'relative',
   },
@@ -524,39 +522,39 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     left: -30,
-    backgroundColor: colors.textPrimary,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    backgroundColor: THEME.colors.TEXT.PRIMARY,
+    paddingHorizontal: THEME.spacing.SM,
+    paddingVertical: THEME.spacing.XS,
+    borderRadius: THEME.borderRadius.SM,
     minWidth: 80,
     alignItems: 'center',
   },
   tooltipValue: {
-    ...typography.caption,
-    color: colors.white,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.NEUTRAL.WHITE,
     fontWeight: '600',
   },
   tooltipDate: {
-    ...typography.caption,
-    color: colors.white,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.NEUTRAL.WHITE,
     opacity: 0.8,
   },
   xAxis: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 8,
+    marginTop: THEME.spacing.SM,
   },
   xAxisLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     textAlign: 'center',
     flex: 1,
   },
   legend: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 16,
-    gap: 16,
+    marginTop: THEME.spacing.MD,
+    gap: THEME.spacing.MD,
   },
   legendItem: {
     flexDirection: 'row',
@@ -566,15 +564,15 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    marginRight: 6,
+    marginRight: THEME.spacing.XS,
   },
   legendText: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
   },
   noDataText: {
-    ...typography.body2,
-    color: colors.textSecondary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     textAlign: 'center',
     fontStyle: 'italic',
   },

@@ -33,10 +33,11 @@ export const useVendorAuth = () => {
   const [isProfileUpdating, setIsProfileUpdating] = useState(false);
   const [isPasswordChanging, setIsPasswordChanging] = useState(false);
 
-  // Session management
+  // Session management constants
   const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
   const MAX_LOGIN_ATTEMPTS = 5;
   const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
+  const PROFILE_REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
   // Computed values
   const userProfile = useMemo(() => {
@@ -406,7 +407,7 @@ export const useVendorAuth = () => {
       if (isAuthenticated) {
         refreshProfile();
       }
-    }, 5 * 60 * 1000);
+    }, PROFILE_REFRESH_INTERVAL);
 
     return () => clearInterval(interval);
   }, [isAuthenticated, refreshProfile]);

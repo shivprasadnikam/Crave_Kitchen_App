@@ -36,6 +36,21 @@ export const useAnalytics = () => {
   const [exportFormat, setExportFormat] = useState('pdf');
   const [isExporting, setIsExporting] = useState(false);
 
+  // Constants
+  const AUTO_REFRESH_INTERVAL = 300000; // 5 minutes
+  const WEEK_DAYS = 7;
+  const WEEKS_PER_MONTH = 4.33;
+  const PEAK_HOURS_THRESHOLD = 0.5;
+  const UNAVAILABILITY_WARNING_THRESHOLD = 0.2;
+  const REVENUE_GROWTH_THRESHOLDS = {
+    POSITIVE: 10,
+    NEGATIVE: -5,
+  };
+  const PENDING_ORDERS_WARNING = 5;
+  const NEW_CUSTOMER_RATIO = 0.5;
+  const POPULAR_ITEMS_LIMIT = 5;
+  const CHART_DATA_POINTS = 7;
+
   // Computed values for enhanced analytics
   const enhancedRevenueData = useMemo(() => {
     if (!revenue.current) return null;
@@ -51,8 +66,8 @@ export const useAnalytics = () => {
       trend: revenue.trend || [],
       breakdown: revenue.breakdown || {},
       // Additional computed values
-      dailyAverage: current.total / 7, // Assuming week period
-      projectedMonthly: current.total * 4.33, // Average weeks per month
+      dailyAverage: current.total / WEEK_DAYS, // Assuming week period
+      projectedMonthly: current.total * WEEKS_PER_MONTH, // Average weeks per month
       topRevenueSource: getTopRevenueSource(revenue.breakdown),
     };
   }, [revenue, revenueGrowth]);
@@ -109,7 +124,7 @@ export const useAnalytics = () => {
       revenue: {
         current: revenue.current?.total || 0,
         growth: revenueGrowth,
-        trend: revenue.trend?.slice(-7) || [], // Last 7 data points
+        trend: revenue.trend?.slice(-CHART_DATA_POINTS) || [], // Last 7 data points
       },
       orders: {
         total: orderStats.total,
@@ -180,14 +195,14 @@ export const useAnalytics = () => {
     const insights = [];
     
     // Revenue insights
-    if (revenueGrowth > 10) {
+    if (revenueGrowth > REVENUE_GROWTH_THRESHOLDS.POSITIVE) {
       insights.push({
         type: 'positive',
         category: 'revenue',
         title: 'Strong Revenue Growth',
         message: `Revenue increased by ${revenueGrowth.toFixed(1)}% compared to the previous period.`,
       });
-    } else if (revenueGrowth < -5) {
+    } else if (revenueGrowth < REVENUE_GROWTH_THRESHOLDS.NEGATIVE) {
       insights.push({
         type: 'negative',
         category: 'revenue',
@@ -197,7 +212,7 @@ export const useAnalytics = () => {
     }
     
     // Order insights
-    if (orderStats.pending > 5) {
+    if (orderStats.pending > PENDING_ORDERS_WARNING) {
       insights.push({
         type: 'warning',
         category: 'orders',
@@ -207,7 +222,7 @@ export const useAnalytics = () => {
     }
     
     // Customer insights
-    if (customers.new > customers.returning * 0.5) {
+    if (customers.new > customers.returning * NEW_CUSTOMER_RATIO) {
       insights.push({
         type: 'positive',
         category: 'customers',
@@ -217,7 +232,7 @@ export const useAnalytics = () => {
     }
     
     // Menu insights
-    if (menuStats.unavailable > menuStats.total * 0.2) {
+    if (menuStats.unavailable > menuStats.total * UNAVAILABILITY_WARNING_THRESHOLD) {
       insights.push({
         type: 'warning',
         category: 'menu',
@@ -282,7 +297,7 @@ export const useAnalytics = () => {
     return Object.entries(itemCounts)
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
+      .slice(0, POPULAR_ITEMS_LIMIT);
   }, []);
 
   const calculateCustomerRetention = useCallback((orders) => {
@@ -339,7 +354,7 @@ export const useAnalytics = () => {
       if (!isLoading) {
         handleFetchAnalytics();
       }
-    }, 300000); // Refresh every 5 minutes
+    }, AUTO_REFRESH_INTERVAL);
 
     return () => clearInterval(interval);
   }, [handleFetchAnalytics, isLoading]);

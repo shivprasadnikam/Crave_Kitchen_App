@@ -7,9 +7,7 @@ import {
   Dimensions,
   Image,
 } from 'react-native';
-import { colors } from '../../styles/colors';
-import { globalStyles } from '../../styles/globalStyles';
-import { typography } from '../../styles/typography';
+import { THEME } from '../../styles/theme';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -42,12 +40,12 @@ const PopularItemsChart = ({
   ];
 
   const chartColors = [
-    colors.primary,
-    colors.secondary,
-    colors.success,
-    colors.warning,
-    colors.error,
-    colors.info,
+    THEME.colors.PRIMARY.MAIN,
+    THEME.colors.SECONDARY.MAIN,
+    THEME.colors.SUCCESS.MAIN,
+    THEME.colors.WARNING.MAIN,
+    THEME.colors.ERROR.MAIN,
+    THEME.colors.INFO.MAIN,
   ];
 
   const formatNumber = (num) => {
@@ -203,7 +201,7 @@ const PopularItemsChart = ({
                   {
                     width: barWidth,
                     backgroundColor: isSelected || isHovered 
-                      ? colors.primary 
+                      ? THEME.colors.PRIMARY.MAIN 
                       : barColor,
                     opacity: isSelected || isHovered ? 1 : 0.8,
                   }
@@ -294,7 +292,7 @@ const PopularItemsChart = ({
                     width: barWidth - 8,
                     height: Math.max(20, barHeight),
                     backgroundColor: isSelected || isHovered 
-                      ? colors.primary 
+                      ? THEME.colors.PRIMARY.MAIN 
                       : barColor,
                     opacity: isSelected || isHovered ? 1 : 0.8,
                   }
@@ -414,133 +412,133 @@ const PopularItemsChart = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    ...globalStyles.shadow,
+    backgroundColor: THEME.colors.SURFACE.PRIMARY,
+    borderRadius: THEME.borderRadius.MD,
+    padding: THEME.spacing.MD,
+    ...THEME.shadows.SM,
   },
   periodSelector: {
     flexDirection: 'row',
-    marginBottom: 12,
-    backgroundColor: colors.background,
-    borderRadius: 8,
-    padding: 4,
+    marginBottom: THEME.spacing.MD,
+    backgroundColor: THEME.colors.SURFACE.SECONDARY,
+    borderRadius: THEME.borderRadius.SM,
+    padding: THEME.spacing.XS,
   },
   periodButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    borderRadius: 6,
+    paddingVertical: THEME.spacing.SM,
+    paddingHorizontal: THEME.spacing.SM,
+    borderRadius: THEME.borderRadius.SM,
   },
   activePeriodButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: THEME.colors.PRIMARY.MAIN,
   },
   periodIcon: {
     fontSize: 14,
-    marginRight: 4,
+    marginRight: THEME.spacing.XS,
   },
   periodLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     fontWeight: '500',
     fontSize: 10,
   },
   activePeriodLabel: {
-    color: colors.white,
+    color: THEME.colors.NEUTRAL.WHITE,
   },
   typeSelector: {
     flexDirection: 'row',
-    marginBottom: 16,
-    backgroundColor: colors.background,
-    borderRadius: 8,
-    padding: 4,
+    marginBottom: THEME.spacing.MD,
+    backgroundColor: THEME.colors.SURFACE.SECONDARY,
+    borderRadius: THEME.borderRadius.SM,
+    padding: THEME.spacing.XS,
   },
   typeButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
+    paddingVertical: THEME.spacing.SM,
+    paddingHorizontal: THEME.spacing.MD,
+    borderRadius: THEME.borderRadius.SM,
   },
   activeTypeButton: {
-    backgroundColor: colors.secondary,
+    backgroundColor: THEME.colors.SECONDARY.MAIN,
   },
   typeIcon: {
     fontSize: 16,
-    marginRight: 4,
+    marginRight: THEME.spacing.XS,
   },
   typeLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     fontWeight: '500',
   },
   activeTypeLabel: {
-    color: colors.white,
+    color: THEME.colors.NEUTRAL.WHITE,
   },
   summary: {
     flexDirection: 'row',
-    marginBottom: 16,
-    gap: 16,
+    marginBottom: THEME.spacing.MD,
+    gap: THEME.spacing.MD,
   },
   summaryItem: {
     flex: 1,
-    backgroundColor: colors.background,
-    borderRadius: 8,
-    padding: 12,
+    backgroundColor: THEME.colors.SURFACE.SECONDARY,
+    borderRadius: THEME.borderRadius.SM,
+    padding: THEME.spacing.MD,
     alignItems: 'center',
   },
   summaryLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginBottom: 4,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
+    marginBottom: THEME.spacing.XS,
   },
   summaryValue: {
-    ...typography.body1,
-    color: colors.textPrimary,
+    ...THEME.typography.BODY.MEDIUM,
+    color: THEME.colors.TEXT.PRIMARY,
     fontWeight: '600',
   },
   chartContainer: {
-    gap: 8,
+    gap: THEME.spacing.SM,
   },
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: colors.background,
+    paddingVertical: THEME.spacing.SM,
+    paddingHorizontal: THEME.spacing.MD,
+    borderRadius: THEME.borderRadius.SM,
+    backgroundColor: THEME.colors.SURFACE.SECONDARY,
     position: 'relative',
   },
   selectedItemRow: {
-    backgroundColor: colors.primary + '20',
+    backgroundColor: THEME.colors.PRIMARY.MAIN + '20',
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: THEME.colors.PRIMARY.MAIN,
   },
   rankingContainer: {
     width: 30,
     alignItems: 'center',
-    marginRight: 8,
+    marginRight: THEME.spacing.SM,
   },
   rankingText: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     fontWeight: '600',
   },
   topRankingText: {
-    color: colors.warning,
+    color: THEME.colors.WARNING.MAIN,
     fontWeight: '700',
   },
   imageContainer: {
     width: 40,
     height: 40,
-    borderRadius: 8,
+    borderRadius: THEME.borderRadius.SM,
     overflow: 'hidden',
-    marginRight: 12,
+    marginRight: THEME.spacing.MD,
   },
   itemImage: {
     width: '100%',
@@ -549,7 +547,7 @@ const styles = StyleSheet.create({
   imagePlaceholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: colors.border,
+    backgroundColor: THEME.colors.BORDER.PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -558,17 +556,17 @@ const styles = StyleSheet.create({
   },
   itemInfo: {
     flex: 1,
-    marginRight: 12,
+    marginRight: THEME.spacing.MD,
   },
   itemName: {
-    ...typography.body2,
-    color: colors.textPrimary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.PRIMARY,
     fontWeight: '600',
-    marginBottom: 2,
+    marginBottom: THEME.spacing.XS,
   },
   itemCategory: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
   },
   barContainer: {
     flexDirection: 'row',
@@ -577,18 +575,18 @@ const styles = StyleSheet.create({
   },
   bar: {
     height: 8,
-    borderRadius: 4,
-    marginRight: 8,
+    borderRadius: THEME.borderRadius.XS,
+    marginRight: THEME.spacing.SM,
   },
   valueLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     fontWeight: '600',
     minWidth: 60,
     textAlign: 'right',
   },
   selectedValueLabel: {
-    color: colors.primary,
+    color: THEME.colors.PRIMARY.MAIN,
   },
   verticalBarsContainer: {
     flexDirection: 'row',
@@ -604,31 +602,31 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   verticalBar: {
-    borderRadius: 4,
+    borderRadius: THEME.borderRadius.XS,
     justifyContent: 'flex-end',
     alignItems: 'center',
-    paddingBottom: 4,
+    paddingBottom: THEME.spacing.XS,
   },
   barValue: {
-    ...typography.caption,
-    color: colors.white,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.NEUTRAL.WHITE,
     fontWeight: '600',
     fontSize: 10,
   },
   barItemName: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: THEME.spacing.SM,
     fontSize: 10,
   },
   tooltip: {
     position: 'absolute',
     top: -80,
     right: 0,
-    backgroundColor: colors.textPrimary,
-    padding: 8,
-    borderRadius: 6,
+    backgroundColor: THEME.colors.TEXT.PRIMARY,
+    padding: THEME.spacing.SM,
+    borderRadius: THEME.borderRadius.SM,
     minWidth: 120,
     zIndex: 1000,
   },
@@ -636,38 +634,38 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -60,
     left: -40,
-    backgroundColor: colors.textPrimary,
-    padding: 8,
-    borderRadius: 6,
+    backgroundColor: THEME.colors.TEXT.PRIMARY,
+    padding: THEME.spacing.SM,
+    borderRadius: THEME.borderRadius.SM,
     minWidth: 100,
     alignItems: 'center',
     zIndex: 1000,
   },
   tooltipTitle: {
-    ...typography.caption,
-    color: colors.white,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.NEUTRAL.WHITE,
     fontWeight: '600',
-    marginBottom: 2,
+    marginBottom: THEME.spacing.XS,
   },
   tooltipValue: {
-    ...typography.caption,
-    color: colors.white,
-    marginBottom: 2,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.NEUTRAL.WHITE,
+    marginBottom: THEME.spacing.XS,
   },
   tooltipSubValue: {
-    ...typography.caption,
-    color: colors.white,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.NEUTRAL.WHITE,
     opacity: 0.8,
-    marginBottom: 2,
+    marginBottom: THEME.spacing.XS,
   },
   tooltipRank: {
-    ...typography.caption,
-    color: colors.white,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.NEUTRAL.WHITE,
     opacity: 0.6,
   },
   noDataText: {
-    ...typography.body2,
-    color: colors.textSecondary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     textAlign: 'center',
     fontStyle: 'italic',
   },

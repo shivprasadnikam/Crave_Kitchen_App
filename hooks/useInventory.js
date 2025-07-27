@@ -16,6 +16,13 @@ export const useInventory = () => {
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
 
+  // Constants
+  const AUTO_REFRESH_INTERVAL = 300000; // 5 minutes
+  const MOCK_API_DELAY = 1000; // 1 second
+  const EXPIRY_WARNING_DAYS = 7;
+  const CRITICAL_STOCK_THRESHOLD = 0.5;
+  const LOW_STOCK_THRESHOLD = 1.0;
+
   // Mock inventory data for development
   const mockInventory = useMemo(() => [
     {
@@ -186,11 +193,11 @@ export const useInventory = () => {
 
   const expiringItems = useMemo(() => {
     const now = new Date();
-    const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const warningDate = new Date(now.getTime() + EXPIRY_WARNING_DAYS * 24 * 60 * 60 * 1000);
     
     return inventory.filter(item => {
       const expiryDate = new Date(item.expiryDate);
-      return expiryDate <= sevenDaysFromNow && item.currentStock > 0;
+      return expiryDate <= warningDate && item.currentStock > 0;
     });
   }, [inventory]);
 
@@ -210,7 +217,7 @@ export const useInventory = () => {
       // setInventory(response.data);
       
       // Mock API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, MOCK_API_DELAY));
       
       setInventory(mockInventory);
     } catch (error) {
@@ -417,8 +424,8 @@ export const useInventory = () => {
   // Utility functions
   const calculateStockStatus = useCallback((currentStock, minStock) => {
     if (currentStock === 0) return 'out';
-    if (currentStock <= minStock * 0.5) return 'critical';
-    if (currentStock <= minStock) return 'low';
+    if (currentStock <= minStock * CRITICAL_STOCK_THRESHOLD) return 'critical';
+    if (currentStock <= minStock * LOW_STOCK_THRESHOLD) return 'low';
     return 'good';
   }, []);
 
@@ -471,7 +478,7 @@ export const useInventory = () => {
       if (!isLoading) {
         fetchInventory();
       }
-    }, 300000); // Refresh every 5 minutes
+    }, AUTO_REFRESH_INTERVAL);
 
     return () => clearInterval(interval);
   }, [fetchInventory, isLoading]);

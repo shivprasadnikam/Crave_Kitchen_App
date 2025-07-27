@@ -6,9 +6,7 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import { colors } from '../../styles/colors';
-import { globalStyles } from '../../styles/globalStyles';
-import { typography } from '../../styles/typography';
+import { THEME } from '../../styles/theme';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -40,23 +38,23 @@ const OrderChart = ({
   ];
 
   const statusColors = {
-    pending: colors.warning,
-    accepted: colors.info,
-    preparing: colors.primary,
-    ready: colors.success,
-    delivered: colors.success,
-    completed: colors.success,
-    cancelled: colors.error,
-    rejected: colors.error,
+    pending: THEME.colors.WARNING.MAIN,
+    accepted: THEME.colors.INFO.MAIN,
+    preparing: THEME.colors.PRIMARY.MAIN,
+    ready: THEME.colors.SUCCESS.MAIN,
+    delivered: THEME.colors.SUCCESS.MAIN,
+    completed: THEME.colors.SUCCESS.MAIN,
+    cancelled: THEME.colors.ERROR.MAIN,
+    rejected: THEME.colors.ERROR.MAIN,
   };
 
   const categoryColors = [
-    colors.primary,
-    colors.secondary,
-    colors.success,
-    colors.warning,
-    colors.error,
-    colors.info,
+    THEME.colors.PRIMARY.MAIN,
+    THEME.colors.SECONDARY.MAIN,
+    THEME.colors.SUCCESS.MAIN,
+    THEME.colors.WARNING.MAIN,
+    THEME.colors.ERROR.MAIN,
+    THEME.colors.INFO.MAIN,
   ];
 
   const formatNumber = (num) => {
@@ -120,11 +118,11 @@ const OrderChart = ({
 
   const getBarColor = (item, index) => {
     if (type === 'status') {
-      return statusColors[item.status] || colors.primary;
+      return statusColors[item.status] || THEME.colors.PRIMARY.MAIN;
     } else if (type === 'category') {
       return categoryColors[index % categoryColors.length];
     }
-    return colors.primary;
+    return THEME.colors.PRIMARY.MAIN;
   };
 
   const renderBarChart = () => {
@@ -185,7 +183,7 @@ const OrderChart = ({
                       width: barWidth,
                       height: Math.max(4, barHeight),
                       backgroundColor: isSelected || isHovered 
-                        ? colors.primary 
+                        ? THEME.colors.PRIMARY.MAIN 
                         : barColor,
                       opacity: isSelected || isHovered ? 1 : 0.8,
                     }
@@ -284,7 +282,7 @@ const OrderChart = ({
                     height: radius * 2,
                     borderRadius: radius,
                     backgroundColor: isSelected || isHovered 
-                      ? colors.primary 
+                      ? THEME.colors.PRIMARY.MAIN 
                       : barColor,
                     opacity: isSelected || isHovered ? 1 : 0.8,
                   }
@@ -407,7 +405,7 @@ const OrderChart = ({
               <View style={[
                 styles.legendColor, 
                 { 
-                  backgroundColor: isSelected ? colors.primary : barColor 
+                  backgroundColor: isSelected ? THEME.colors.PRIMARY.MAIN : barColor 
                 }
               ]} />
               <Text style={[
@@ -437,73 +435,73 @@ const OrderChart = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    ...globalStyles.shadow,
+    backgroundColor: THEME.colors.SURFACE.PRIMARY,
+    borderRadius: THEME.borderRadius.MD,
+    padding: THEME.spacing.MD,
+    ...THEME.shadows.SM,
   },
   periodSelector: {
     flexDirection: 'row',
-    marginBottom: 12,
-    backgroundColor: colors.background,
-    borderRadius: 8,
-    padding: 4,
+    marginBottom: THEME.spacing.MD,
+    backgroundColor: THEME.colors.SURFACE.SECONDARY,
+    borderRadius: THEME.borderRadius.SM,
+    padding: THEME.spacing.XS,
   },
   periodButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    borderRadius: 6,
+    paddingVertical: THEME.spacing.SM,
+    paddingHorizontal: THEME.spacing.SM,
+    borderRadius: THEME.borderRadius.SM,
   },
   activePeriodButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: THEME.colors.PRIMARY.MAIN,
   },
   periodIcon: {
     fontSize: 14,
-    marginRight: 4,
+    marginRight: THEME.spacing.XS,
   },
   periodLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     fontWeight: '500',
     fontSize: 10,
   },
   activePeriodLabel: {
-    color: colors.white,
+    color: THEME.colors.NEUTRAL.WHITE,
   },
   typeSelector: {
     flexDirection: 'row',
-    marginBottom: 16,
-    backgroundColor: colors.background,
-    borderRadius: 8,
-    padding: 4,
+    marginBottom: THEME.spacing.MD,
+    backgroundColor: THEME.colors.SURFACE.SECONDARY,
+    borderRadius: THEME.borderRadius.SM,
+    padding: THEME.spacing.XS,
   },
   typeButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
+    paddingVertical: THEME.spacing.SM,
+    paddingHorizontal: THEME.spacing.MD,
+    borderRadius: THEME.borderRadius.SM,
   },
   activeTypeButton: {
-    backgroundColor: colors.secondary,
+    backgroundColor: THEME.colors.SECONDARY.MAIN,
   },
   typeIcon: {
     fontSize: 16,
-    marginRight: 4,
+    marginRight: THEME.spacing.XS,
   },
   typeLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     fontWeight: '500',
   },
   activeTypeLabel: {
-    color: colors.white,
+    color: THEME.colors.NEUTRAL.WHITE,
   },
   chartContainer: {
     flexDirection: 'row',
@@ -512,11 +510,11 @@ const styles = StyleSheet.create({
   yAxis: {
     width: 40,
     justifyContent: 'space-between',
-    paddingRight: 8,
+    paddingRight: THEME.spacing.SM,
   },
   yAxisLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     textAlign: 'right',
     fontSize: 10,
   },
@@ -536,7 +534,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: colors.border,
+    backgroundColor: THEME.colors.BORDER.PRIMARY,
   },
   barsContainer: {
     flexDirection: 'row',
@@ -547,7 +545,7 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   bar: {
-    borderRadius: 4,
+    borderRadius: THEME.borderRadius.XS,
     justifyContent: 'flex-end',
     position: 'relative',
   },
@@ -565,22 +563,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   centerLabelValue: {
-    ...typography.h2,
-    color: colors.textPrimary,
+    ...THEME.typography.HEADING.MEDIUM,
+    color: THEME.colors.TEXT.PRIMARY,
     fontWeight: '600',
   },
   centerLabelText: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
   },
   tooltip: {
     position: 'absolute',
     bottom: 20,
     left: -30,
-    backgroundColor: colors.textPrimary,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    backgroundColor: THEME.colors.TEXT.PRIMARY,
+    paddingHorizontal: THEME.spacing.SM,
+    paddingVertical: THEME.spacing.XS,
+    borderRadius: THEME.borderRadius.SM,
     minWidth: 80,
     alignItems: 'center',
   },
@@ -588,72 +586,72 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -60,
     left: -40,
-    backgroundColor: colors.textPrimary,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    backgroundColor: THEME.colors.TEXT.PRIMARY,
+    paddingHorizontal: THEME.spacing.SM,
+    paddingVertical: THEME.spacing.XS,
+    borderRadius: THEME.borderRadius.SM,
     minWidth: 100,
     alignItems: 'center',
   },
   tooltipValue: {
-    ...typography.caption,
-    color: colors.white,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.NEUTRAL.WHITE,
     fontWeight: '600',
   },
   tooltipLabel: {
-    ...typography.caption,
-    color: colors.white,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.NEUTRAL.WHITE,
     opacity: 0.8,
   },
   tooltipPercentage: {
-    ...typography.caption,
-    color: colors.white,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.NEUTRAL.WHITE,
     opacity: 0.6,
   },
   xAxis: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 8,
+    marginTop: THEME.spacing.SM,
   },
   xAxisLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     textAlign: 'center',
     flex: 1,
     fontSize: 10,
   },
   legend: {
-    marginTop: 16,
-    gap: 8,
+    marginTop: THEME.spacing.MD,
+    gap: THEME.spacing.SM,
   },
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 6,
+    paddingVertical: THEME.spacing.XS,
+    paddingHorizontal: THEME.spacing.SM,
+    borderRadius: THEME.borderRadius.SM,
   },
   selectedLegendItem: {
-    backgroundColor: colors.primary + '20',
+    backgroundColor: THEME.colors.PRIMARY.MAIN + '20',
   },
   legendColor: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    marginRight: 8,
+    marginRight: THEME.spacing.SM,
   },
   legendText: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    ...THEME.typography.CAPTION.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     flex: 1,
   },
   selectedLegendText: {
-    color: colors.primary,
+    color: THEME.colors.PRIMARY.MAIN,
     fontWeight: '600',
   },
   noDataText: {
-    ...typography.body2,
-    color: colors.textSecondary,
+    ...THEME.typography.BODY.SMALL,
+    color: THEME.colors.TEXT.SECONDARY,
     textAlign: 'center',
     fontStyle: 'italic',
   },

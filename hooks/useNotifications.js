@@ -40,6 +40,12 @@ export const useNotifications = () => {
   const [selectedNotifications, setSelectedNotifications] = useState([]);
   const [isBulkEditing, setIsBulkEditing] = useState(false);
 
+  // Constants
+  const AUTO_REFRESH_INTERVAL = 60000; // 1 minute
+  const DAYS_IN_WEEK = 7;
+  const DAYS_IN_MONTH = 30;
+  const URGENT_KEYWORDS = ['error', 'critical', 'urgent', 'failed', 'out of stock'];
+
   // Computed values
   const filteredNotifications = useMemo(() => {
     let filtered = [...notifications];
@@ -142,8 +148,8 @@ export const useNotifications = () => {
       const grouped = {};
       const today = new Date();
       const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-      const thisWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-      const thisMonth = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const thisWeek = new Date(today.getTime() - DAYS_IN_WEEK * 24 * 60 * 60 * 1000);
+      const thisMonth = new Date(today.getTime() - DAYS_IN_MONTH * 24 * 60 * 60 * 1000);
 
       sortedNotifications.forEach(notification => {
         const notificationDate = new Date(notification.timestamp);
@@ -211,8 +217,7 @@ export const useNotifications = () => {
       
       // Consider system notifications urgent if they contain keywords
       if (notification.type === 'system') {
-        const urgentKeywords = ['error', 'critical', 'urgent', 'failed', 'out of stock'];
-        return urgentKeywords.some(keyword => 
+        return URGENT_KEYWORDS.some(keyword => 
           notification.title.toLowerCase().includes(keyword) ||
           notification.message.toLowerCase().includes(keyword)
         );
@@ -432,7 +437,7 @@ export const useNotifications = () => {
       if (!isLoading) {
         fetchNotifications();
       }
-    }, 60000); // Refresh every minute
+    }, AUTO_REFRESH_INTERVAL);
 
     return () => clearInterval(interval);
   }, [fetchNotifications, isLoading]);

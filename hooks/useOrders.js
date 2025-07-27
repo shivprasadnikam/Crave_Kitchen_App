@@ -40,6 +40,11 @@ export const useOrders = () => {
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [dateRange, setDateRange] = useState(null);
 
+  // Constants
+  const AUTO_REFRESH_INTERVAL = 30000; // 30 seconds
+  const URGENT_ORDER_THRESHOLD = 30 * 60 * 1000; // 30 minutes
+  const RECENT_ORDERS_LIMIT = 10;
+
   // Computed values
   const sortedOrders = useMemo(() => {
     let sorted = [...filteredOrders];
@@ -95,16 +100,16 @@ export const useOrders = () => {
   }, [orders, pendingOrders, preparingOrders, readyOrders, completedOrders, cancelledOrders]);
 
   const recentOrders = useMemo(() => {
-    return sortedOrders.slice(0, 10);
+    return sortedOrders.slice(0, RECENT_ORDERS_LIMIT);
   }, [sortedOrders]);
 
   const urgentOrders = useMemo(() => {
     const now = new Date();
-    const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000);
+    const threshold = new Date(now.getTime() - URGENT_ORDER_THRESHOLD);
     
     return pendingOrders.filter(order => {
       const orderTime = new Date(order.createdAt);
-      return orderTime < thirtyMinutesAgo;
+      return orderTime < threshold;
     });
   }, [pendingOrders]);
 
@@ -260,7 +265,7 @@ export const useOrders = () => {
       if (!isLoading) {
         fetchOrders();
       }
-    }, 30000); // Refresh every 30 seconds
+    }, AUTO_REFRESH_INTERVAL);
 
     return () => clearInterval(interval);
   }, [fetchOrders, isLoading]);
