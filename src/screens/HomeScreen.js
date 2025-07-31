@@ -18,8 +18,8 @@ const HomeScreen = ({ navigation }) => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Welcome to Crave Clock</Text>
-        <Text style={styles.subtitle}>Hello, {user?.name || 'User'}!</Text>
+        <Text style={styles.title}>Welcome to Crave Kitchen</Text>
+        <Text style={styles.subtitle}>Hello, {user?.name || 'Vendor'}!</Text>
       </View>
 
       <View style={styles.content}>

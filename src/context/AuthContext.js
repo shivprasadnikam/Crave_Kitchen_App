@@ -99,23 +99,8 @@ export const AuthProvider = ({ children }) => {
             payload: { user, token },
           });
         } else {
-          // BYPASS AUTH - Auto-login for development
-          const mockUser = {
-            id: 1,
-            email: 'admin@cravekitchen.com',
-            name: 'Admin User',
-            role: 'vendor',
-          };
-          const mockToken = 'mock-jwt-token-' + Date.now();
-          
-          // Store in AsyncStorage
-          await AsyncStorage.setItem('auth_token', mockToken);
-          await AsyncStorage.setItem('user_data', JSON.stringify(mockUser));
-          
-          dispatch({
-            type: AUTH_ACTIONS.LOGIN_SUCCESS,
-            payload: { user: mockUser, token: mockToken },
-          });
+          // No stored authentication found - user needs to login
+          dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
         }
       } catch (error) {
         console.error('Error checking auth status:', error);
@@ -132,10 +117,13 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const response = await authService.login(email, password);
-      const { user, token } = response;
+      const { user, token, refreshToken } = response;
 
       // Store in AsyncStorage
       await AsyncStorage.setItem('auth_token', token);
+      if (refreshToken) {
+        await AsyncStorage.setItem('refresh_token', refreshToken);
+      }
       await AsyncStorage.setItem('user_data', JSON.stringify(user));
 
       dispatch({
@@ -160,20 +148,28 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const response = await authService.register(userData);
-      const { user, token } = response;
+      
+      if (response.success) {
+        const { user } = response.data;
 
-      // Store in AsyncStorage
-      await AsyncStorage.setItem('auth_token', token);
-      await AsyncStorage.setItem('user_data', JSON.stringify(user));
+        // Store in AsyncStorage
+        await AsyncStorage.setItem('auth_token', response.data.accessToken);
+        if (response.data.refreshToken) {
+          await AsyncStorage.setItem('refresh_token', response.data.refreshToken);
+        }
+        await AsyncStorage.setItem('user_data', JSON.stringify(user));
 
-      dispatch({
-        type: AUTH_ACTIONS.LOGIN_SUCCESS,
-        payload: { user, token },
-      });
+        dispatch({
+          type: AUTH_ACTIONS.LOGIN_SUCCESS,
+          payload: { user, token: response.data.accessToken },
+        });
 
-      return { success: true };
+        return { success: true, message: response.message };
+      } else {
+        throw new Error(response.message || 'Registration failed');
+      }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Registration failed';
+      const errorMessage = error.message || 'Registration failed';
       dispatch({
         type: AUTH_ACTIONS.LOGIN_FAILURE,
         payload: errorMessage,
@@ -185,14 +181,30 @@ export const AuthProvider = ({ children }) => {
   // Logout function
   const logout = async () => {
     try {
-      // Clear AsyncStorage
-      await AsyncStorage.removeItem('auth_token');
-      await AsyncStorage.removeItem('user_data');
-
-      dispatch({ type: AUTH_ACTIONS.LOGOUT });
+      console.log('🚪 [AUTH CONTEXT] Starting logout process...');
+      
+      // Call the logout API endpoint
+      await authService.logout();
+      
+      console.log('✅ [AUTH CONTEXT] API logout successful, clearing local storage...');
     } catch (error) {
-      console.error('Error during logout:', error);
-      dispatch({ type: AUTH_ACTIONS.LOGOUT });
+      console.log('⚠️ [AUTH CONTEXT] API logout failed, but continuing with local logout:', error.message);
+      // Continue with local logout even if API call fails
+    } finally {
+      try {
+        // Clear AsyncStorage
+        await AsyncStorage.removeItem('auth_token');
+        await AsyncStorage.removeItem('refresh_token');
+        await AsyncStorage.removeItem('user_data');
+        
+        console.log('✅ [AUTH CONTEXT] Local storage cleared successfully');
+        
+        dispatch({ type: AUTH_ACTIONS.LOGOUT });
+      } catch (error) {
+        console.error('❌ [AUTH CONTEXT] Error clearing local storage:', error);
+        // Still dispatch logout even if clearing storage fails
+        dispatch({ type: AUTH_ACTIONS.LOGOUT });
+      }
     }
   };
 
@@ -244,10 +256,20 @@ export const AuthProvider = ({ children }) => {
   // Refresh token function
   const refreshToken = async () => {
     try {
-      const response = await authService.refreshToken();
-      const { token } = response;
+      // Get the refresh token from AsyncStorage
+      const refreshTokenValue = await AsyncStorage.getItem('refresh_token');
+      
+      if (!refreshTokenValue) {
+        throw new Error('No refresh token available');
+      }
+      
+      const response = await authService.refreshToken(refreshTokenValue);
+      const { token, refreshToken: newRefreshToken } = response;
 
       await AsyncStorage.setItem('auth_token', token);
+      if (newRefreshToken) {
+        await AsyncStorage.setItem('refresh_token', newRefreshToken);
+      }
 
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,

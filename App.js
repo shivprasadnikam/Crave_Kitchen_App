@@ -1,13 +1,13 @@
 // import React from 'react';
 // import { View, Text, StyleSheet } from 'react-native';
 import React from 'react';
-import HomeScreen from './src/screens/HomeScreen';
+import AppNavigator from './src/navigation/AppNavigator';
 import { AuthProvider } from './src/context/AuthContext';
 
 export default function App() {
   return (
     <AuthProvider>
-      <HomeScreen />
+      <AppNavigator />
     </AuthProvider>
   );
 }

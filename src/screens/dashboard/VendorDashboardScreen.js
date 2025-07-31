@@ -6,10 +6,13 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useAuth } from '../../context/AuthContext';
 
 const VendorDashboardScreen = () => {
+  const { logout } = useAuth();
   const stats = [
     { title: 'Total Orders', value: '24', color: '#FF6B35' },
     { title: 'Revenue', value: '$1,234', color: '#4CAF50' },
@@ -22,8 +25,36 @@ const VendorDashboardScreen = () => {
       <ScrollView style={styles.scrollView}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Dashboard</Text>
-          <Text style={styles.headerSubtitle}>Welcome back!</Text>
+          <View style={styles.headerContent}>
+            <Text style={styles.headerTitle}>Dashboard</Text>
+            <Text style={styles.headerSubtitle}>Welcome back!</Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.logoutButton}
+            onPress={() => {
+              Alert.alert(
+                'Logout',
+                'Are you sure you want to logout?',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  { 
+                    text: 'Logout', 
+                    style: 'destructive',
+                    onPress: async () => {
+                      try {
+                        await logout();
+                      } catch (error) {
+                        console.error('Logout error:', error);
+                        Alert.alert('Error', 'Failed to logout. Please try again.');
+                      }
+                    }
+                  }
+                ]
+              );
+            }}
+          >
+            <Text style={styles.logoutButtonText}>Logout</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Stats Grid */}
@@ -105,6 +136,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerContent: {
+    flex: 1,
   },
   headerTitle: {
     fontSize: 28,
@@ -115,6 +152,17 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     fontSize: 16,
     color: '#757575',
+  },
+  logoutButton: {
+    backgroundColor: '#FF4444',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  logoutButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
   statsContainer: {
     flexDirection: 'row',
