@@ -12,7 +12,7 @@ const CURRENT_ENV = ENV.DEVELOPMENT;
 
 const API_CONFIGS = {
   [ENV.DEVELOPMENT]: {
-    BASE_URL: 'http://192.168.1.3:9090',
+    BASE_URL: 'http://192.168.1.4:9090',
     TIMEOUT: 10000,
     RETRY_ATTEMPTS: 3,
   },

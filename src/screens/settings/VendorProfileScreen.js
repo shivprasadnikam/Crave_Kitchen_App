@@ -74,23 +74,35 @@ const VendorProfileScreen = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Settings</Text>
           
-          <TouchableOpacity style={styles.optionButton}>
-            <Text style={styles.optionText}>Edit Profile</Text>
+          <TouchableOpacity 
+            style={styles.optionButton}
+            onPress={() => navigation.navigate('RestaurantSettings')}
+          >
+            <Text style={styles.optionText}>Restaurant Settings</Text>
             <Text style={styles.optionArrow}>›</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.optionButton}>
-            <Text style={styles.optionText}>Change Password</Text>
-            <Text style={styles.optionArrow}>›</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.optionButton}>
+          <TouchableOpacity 
+            style={styles.optionButton}
+            onPress={() => navigation.navigate('NotificationSettings')}
+          >
             <Text style={styles.optionText}>Notification Settings</Text>
             <Text style={styles.optionArrow}>›</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.optionButton}>
-            <Text style={styles.optionText}>Privacy Settings</Text>
+          <TouchableOpacity 
+            style={styles.optionButton}
+            onPress={() => navigation.navigate('OperatingHours')}
+          >
+            <Text style={styles.optionText}>Operating Hours</Text>
+            <Text style={styles.optionArrow}>›</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.optionButton}
+            onPress={() => navigation.navigate('SecuritySettings')}
+          >
+            <Text style={styles.optionText}>Security Settings</Text>
             <Text style={styles.optionArrow}>›</Text>
           </TouchableOpacity>
         </View>

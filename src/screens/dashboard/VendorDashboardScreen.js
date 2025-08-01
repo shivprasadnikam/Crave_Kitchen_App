@@ -76,17 +76,60 @@ const VendorDashboardScreen = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           <View style={styles.actionsContainer}>
-            <TouchableOpacity style={styles.actionButton}>
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => navigation.navigate('AddMenuItem')}
+            >
               <Text style={styles.actionButtonText}>Add Menu Item</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton}>
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => navigation.navigate('OrderList')}
+            >
               <Text style={styles.actionButtonText}>View Orders</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton}>
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => navigation.navigate('AnalyticsDashboard')}
+            >
               <Text style={styles.actionButtonText}>Analytics</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton}>
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => navigation.navigate('VendorProfile')}
+            >
               <Text style={styles.actionButtonText}>Settings</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Additional Actions */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>More Options</Text>
+          <View style={styles.actionsContainer}>
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => navigation.navigate('MenuManagement')}
+            >
+              <Text style={styles.actionButtonText}>Menu Management</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => navigation.navigate('Inventory')}
+            >
+              <Text style={styles.actionButtonText}>Inventory</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => navigation.navigate('Revenue')}
+            >
+              <Text style={styles.actionButtonText}>Finances</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => navigation.navigate('HelpCenter')}
+            >
+              <Text style={styles.actionButtonText}>Support</Text>
             </TouchableOpacity>
           </View>
         </View>
