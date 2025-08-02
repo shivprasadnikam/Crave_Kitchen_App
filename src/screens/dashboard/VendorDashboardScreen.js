@@ -3,162 +3,151 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   SafeAreaView,
-  Alert,
+  ScrollView,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useAuth } from '../../context/AuthContext';
+import { useNavigation } from '@react-navigation/native';
 
 const VendorDashboardScreen = () => {
-  const { logout } = useAuth();
-  const stats = [
-    { title: 'Total Orders', value: '24', color: '#FF6B35' },
-    { title: 'Revenue', value: '$1,234', color: '#4CAF50' },
-    { title: 'Menu Items', value: '12', color: '#2196F3' },
-    { title: 'Customers', value: '89', color: '#9C27B0' },
+  const navigation = useNavigation();
+
+  const dashboardStats = [
+    {
+      id: '1',
+      title: 'Today\'s Orders',
+      value: '12',
+      change: '+3',
+      icon: '📋',
+      color: '#4CAF50',
+    },
+    {
+      id: '2',
+      title: 'Revenue',
+      value: '$1,234',
+      change: '+15%',
+      icon: '💰',
+      color: '#FF6B35',
+    },
+    {
+      id: '3',
+      title: 'Active Items',
+      value: '45',
+      change: '+2',
+      icon: '🍽️',
+      color: '#2196F3',
+    },
+    {
+      id: '4',
+      title: 'Low Stock',
+      value: '3',
+      change: '-1',
+      icon: '⚠️',
+      color: '#FF9800',
+    },
   ];
+
+  const quickActions = [
+    {
+      id: '1',
+      title: 'Add Menu Item',
+      icon: '➕',
+      screen: 'AddMenuItem',
+    },
+    {
+      id: '2',
+      title: 'View Orders',
+      icon: '📋',
+      screen: 'OrderList',
+    },
+    {
+      id: '3',
+      title: 'Analytics',
+      icon: '📊',
+      screen: 'AnalyticsDashboard',
+    },
+    {
+      id: '4',
+      title: 'Inventory',
+      icon: '📦',
+      screen: 'Inventory',
+    },
+  ];
+
+  const renderStatCard = (stat) => (
+    <View key={stat.id} style={styles.statCard}>
+      <View style={styles.statHeader}>
+        <Text style={styles.statIcon}>{stat.icon}</Text>
+        <Text style={[styles.statChange, { color: stat.color }]}>
+          {stat.change}
+        </Text>
+      </View>
+      <Text style={styles.statValue}>{stat.value}</Text>
+      <Text style={styles.statTitle}>{stat.title}</Text>
+    </View>
+  );
+
+  const renderQuickAction = (action) => (
+    <TouchableOpacity
+      key={action.id}
+      style={styles.quickActionCard}
+      onPress={() => navigation.navigate(action.screen)}
+    >
+      <Text style={styles.quickActionIcon}>{action.icon}</Text>
+      <Text style={styles.quickActionTitle}>{action.title}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>Dashboard</Text>
-            <Text style={styles.headerSubtitle}>Welcome back!</Text>
-          </View>
-          <TouchableOpacity 
-            style={styles.logoutButton}
-            onPress={() => {
-              Alert.alert(
-                'Logout',
-                'Are you sure you want to logout?',
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  { 
-                    text: 'Logout', 
-                    style: 'destructive',
-                    onPress: async () => {
-                      try {
-                        await logout();
-                      } catch (error) {
-                        console.error('Logout error:', error);
-                        Alert.alert('Error', 'Failed to logout. Please try again.');
-                      }
-                    }
-                  }
-                ]
-              );
-            }}
-          >
-            <Text style={styles.logoutButtonText}>Logout</Text>
-          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Dashboard</Text>
+          <Text style={styles.headerSubtitle}>Welcome back! Here's your overview</Text>
         </View>
 
         {/* Stats Grid */}
-        <View style={styles.statsContainer}>
-          {stats.map((stat, index) => (
-            <View key={index} style={styles.statCard}>
-              <LinearGradient
-                colors={[stat.color, stat.color + '80']}
-                style={styles.statGradient}
-              >
-                <Text style={styles.statValue}>{stat.value}</Text>
-                <Text style={styles.statTitle}>{stat.title}</Text>
-              </LinearGradient>
-            </View>
-          ))}
+        <View style={styles.statsSection}>
+          <Text style={styles.sectionTitle}>Today's Overview</Text>
+          <View style={styles.statsGrid}>
+            {dashboardStats.map(renderStatCard)}
+          </View>
         </View>
 
         {/* Quick Actions */}
-        <View style={styles.section}>
+        <View style={styles.quickActionsSection}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
-          <View style={styles.actionsContainer}>
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => navigation.navigate('AddMenuItem')}
-            >
-              <Text style={styles.actionButtonText}>Add Menu Item</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => navigation.navigate('OrderList')}
-            >
-              <Text style={styles.actionButtonText}>View Orders</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => navigation.navigate('AnalyticsDashboard')}
-            >
-              <Text style={styles.actionButtonText}>Analytics</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => navigation.navigate('VendorProfile')}
-            >
-              <Text style={styles.actionButtonText}>Settings</Text>
-            </TouchableOpacity>
+          <View style={styles.quickActionsGrid}>
+            {quickActions.map(renderQuickAction)}
           </View>
         </View>
 
-        {/* Additional Actions */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>More Options</Text>
-          <View style={styles.actionsContainer}>
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => navigation.navigate('MenuManagement')}
-            >
-              <Text style={styles.actionButtonText}>Menu Management</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => navigation.navigate('Inventory')}
-            >
-              <Text style={styles.actionButtonText}>Inventory</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => navigation.navigate('Revenue')}
-            >
-              <Text style={styles.actionButtonText}>Finances</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => navigation.navigate('HelpCenter')}
-            >
-              <Text style={styles.actionButtonText}>Support</Text>
+        {/* Recent Orders */}
+        <View style={styles.recentOrdersSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Recent Orders</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('OrderList')}>
+              <Text style={styles.viewAllText}>View All</Text>
             </TouchableOpacity>
           </View>
-        </View>
-
-        {/* Recent Activity */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
-          <View style={styles.activityContainer}>
-            <View style={styles.activityItem}>
-              <View style={styles.activityDot} />
-              <View style={styles.activityContent}>
-                <Text style={styles.activityTitle}>New order received</Text>
-                <Text style={styles.activityTime}>2 minutes ago</Text>
-              </View>
+          
+          <View style={styles.orderCard}>
+            <View style={styles.orderHeader}>
+              <Text style={styles.orderNumber}>#ORD-001</Text>
+              <Text style={styles.orderStatus}>Preparing</Text>
             </View>
-            <View style={styles.activityItem}>
-              <View style={styles.activityDot} />
-              <View style={styles.activityContent}>
-                <Text style={styles.activityTitle}>Menu item updated</Text>
-                <Text style={styles.activityTime}>15 minutes ago</Text>
-              </View>
+            <Text style={styles.orderItems}>Pizza Margherita, Coke</Text>
+            <Text style={styles.orderTime}>2 minutes ago</Text>
+          </View>
+          
+          <View style={styles.orderCard}>
+            <View style={styles.orderHeader}>
+              <Text style={styles.orderNumber}>#ORD-002</Text>
+              <Text style={styles.orderStatus}>Ready</Text>
             </View>
-            <View style={styles.activityItem}>
-              <View style={styles.activityDot} />
-              <View style={styles.activityContent}>
-                <Text style={styles.activityTitle}>Payment received</Text>
-                <Text style={styles.activityTime}>1 hour ago</Text>
-              </View>
-            </View>
+            <Text style={styles.orderItems}>Chicken Burger, Fries</Text>
+            <Text style={styles.orderTime}>15 minutes ago</Text>
           </View>
         </View>
       </ScrollView>
@@ -179,12 +168,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  headerContent: {
-    flex: 1,
   },
   headerTitle: {
     fontSize: 28,
@@ -196,21 +180,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#757575',
   },
-  logoutButton: {
-    backgroundColor: '#FF4444',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
+  statsSection: {
+    margin: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 20,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
   },
-  logoutButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  statsContainer: {
+  statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    padding: 16,
+    justifyContent: 'space-between',
     gap: 16,
   },
   statCard: {
@@ -225,26 +212,39 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-  },
-  statGradient: {
+    backgroundColor: '#FFFFFF',
     padding: 20,
     alignItems: 'center',
+  },
+  statHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 10,
+  },
+  statIcon: {
+    fontSize: 24,
+    marginRight: 8,
+  },
+  statChange: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: '#212121',
     marginBottom: 4,
   },
   statTitle: {
     fontSize: 14,
-    color: '#FFFFFF',
-    opacity: 0.9,
+    color: '#757575',
     textAlign: 'center',
   },
-  section: {
-    backgroundColor: '#FFFFFF',
+  quickActionsSection: {
     margin: 16,
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 20,
     elevation: 2,
@@ -256,54 +256,99 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 2,
   },
+  quickActionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  quickActionCard: {
+    width: '47%',
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    backgroundColor: '#FFFFFF',
+    padding: 15,
+    alignItems: 'center',
+  },
+  quickActionIcon: {
+    fontSize: 28,
+    marginBottom: 8,
+  },
+  quickActionTitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#212121',
+    textAlign: 'center',
+  },
+  recentOrdersSection: {
+    margin: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 20,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
     color: '#212121',
-    marginBottom: 16,
   },
-  actionsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  actionButton: {
-    backgroundColor: '#FF6B35',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    minWidth: '45%',
-  },
-  actionButtonText: {
-    color: '#FFFFFF',
+  viewAllText: {
     fontSize: 14,
+    color: '#FF6B35',
     fontWeight: '500',
-    textAlign: 'center',
   },
-  activityContainer: {
-    gap: 16,
+  orderCard: {
+    backgroundColor: '#F9F9F9',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
-  activityItem: {
+  orderHeader: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 8,
   },
-  activityDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#FF6B35',
-    marginRight: 12,
-  },
-  activityContent: {
-    flex: 1,
-  },
-  activityTitle: {
+  orderNumber: {
     fontSize: 16,
+    fontWeight: 'bold',
     color: '#212121',
-    marginBottom: 2,
   },
-  activityTime: {
+  orderStatus: {
     fontSize: 14,
+    color: '#4CAF50',
+    fontWeight: '600',
+  },
+  orderItems: {
+    fontSize: 14,
+    color: '#757575',
+    marginBottom: 8,
+  },
+  orderTime: {
+    fontSize: 12,
     color: '#757575',
   },
 });

@@ -1,136 +1,183 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
-  ScrollView,
   FlatList,
+  Alert,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
-const OrderListScreen = ({ navigation }) => {
-  // Sample order data
-  const orders = [
-    {
-      id: '1',
-      orderNumber: '#ORD-001',
-      customerName: 'John Doe',
-      items: '2x Pizza Margherita, 1x Coke',
-      total: '$24.99',
-      status: 'Pending',
-      time: '2 minutes ago',
-    },
-    {
-      id: '2',
-      orderNumber: '#ORD-002',
-      customerName: 'Jane Smith',
-      items: '1x Chicken Burger, 1x Fries',
-      total: '$18.50',
-      status: 'Preparing',
-      time: '15 minutes ago',
-    },
-    {
-      id: '3',
-      orderNumber: '#ORD-003',
-      customerName: 'Mike Johnson',
-      items: '3x Pasta Carbonara',
-      total: '$32.97',
-      status: 'Ready',
-      time: '1 hour ago',
-    },
-  ];
+const OrderListScreen = () => {
+  const navigation = useNavigation();
+  
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Pending':
-        return '#FFA500';
-      case 'Preparing':
-        return '#4A90E2';
-      case 'Ready':
-        return '#4CAF50';
-      case 'Completed':
-        return '#666666';
-      default:
-        return '#FF6B35';
+  useEffect(() => {
+    loadOrders();
+  }, []);
+
+  const loadOrders = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Mock data for now - replace with actual API call
+      const mockOrders = [
+        {
+          id: '1',
+          orderNumber: 'ORD-001',
+          customerName: 'John Doe',
+          items: ['Pizza Margherita', 'Coke'],
+          total: 24.99,
+          status: 'pending',
+          time: '2 minutes ago',
+        },
+        {
+          id: '2',
+          orderNumber: 'ORD-002',
+          customerName: 'Jane Smith',
+          items: ['Chicken Burger', 'Fries'],
+          total: 18.50,
+          status: 'preparing',
+          time: '15 minutes ago',
+        },
+        {
+          id: '3',
+          orderNumber: 'ORD-003',
+          customerName: 'Mike Johnson',
+          items: ['Pasta Carbonara', 'Salad'],
+          total: 22.75,
+          status: 'ready',
+          time: '1 hour ago',
+        },
+      ];
+      
+      setOrders(mockOrders);
+    } catch (error) {
+      console.error('Error loading orders:', error);
+      setError('Failed to load orders');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const renderOrderItem = ({ item }) => (
-    <TouchableOpacity 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadOrders();
+    setRefreshing(false);
+  };
+
+  const handleOrderPress = (order) => {
+    navigation.navigate('OrderDetail', { orderId: order.id });
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'pending':
+        return '#FF9800';
+      case 'preparing':
+        return '#2196F3';
+      case 'ready':
+        return '#4CAF50';
+      case 'completed':
+        return '#9E9E9E';
+      default:
+        return '#666666';
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'pending':
+        return 'Pending';
+      case 'preparing':
+        return 'Preparing';
+      case 'ready':
+        return 'Ready';
+      case 'completed':
+        return 'Completed';
+      default:
+        return status;
+    }
+  };
+
+  const renderOrder = ({ item }) => (
+    <TouchableOpacity
       style={styles.orderCard}
-      onPress={() => navigation.navigate('OrderDetail', { orderId: item.id })}
+      onPress={() => handleOrderPress(item)}
     >
       <View style={styles.orderHeader}>
         <Text style={styles.orderNumber}>{item.orderNumber}</Text>
-        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
-          <Text style={styles.statusText}>{item.status}</Text>
-        </View>
+        <Text style={[styles.orderStatus, { color: getStatusColor(item.status) }]}>
+          {getStatusText(item.status)}
+        </Text>
       </View>
       
       <Text style={styles.customerName}>{item.customerName}</Text>
-      <Text style={styles.orderItems}>{item.items}</Text>
+      <Text style={styles.orderItems}>{item.items.join(', ')}</Text>
       
       <View style={styles.orderFooter}>
-        <Text style={styles.orderTotal}>{item.total}</Text>
+        <Text style={styles.orderTotal}>${item.total}</Text>
         <Text style={styles.orderTime}>{item.time}</Text>
       </View>
     </TouchableOpacity>
   );
 
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF6B35" />
+          <Text style={styles.loadingText}>Loading orders...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Orders</Text>
-          <Text style={styles.headerSubtitle}>Manage your restaurant orders</Text>
-        </View>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Orders</Text>
+        <Text style={styles.headerSubtitle}>
+          {orders.length} active orders
+        </Text>
+      </View>
 
-        {/* Filter Tabs */}
-        <View style={styles.filterTabs}>
-          <TouchableOpacity style={[styles.filterTab, styles.activeTab]}>
-            <Text style={[styles.filterTabText, styles.activeTabText]}>All</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.filterTab}>
-            <Text style={styles.filterTabText}>Pending</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.filterTab}>
-            <Text style={styles.filterTabText}>Preparing</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.filterTab}>
-            <Text style={styles.filterTabText}>Ready</Text>
+      {error ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Error: {error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={loadOrders}>
+            <Text style={styles.retryButtonText}>Retry</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Orders List */}
-        <View style={styles.ordersContainer}>
-          <FlatList
-            data={orders}
-            renderItem={renderOrderItem}
-            keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.ordersList}
-          />
-        </View>
-
-        {/* Quick Actions */}
-        <View style={styles.quickActions}>
-          <TouchableOpacity 
-            style={styles.actionButton}
-            onPress={() => navigation.navigate('PendingOrders')}
-          >
-            <Text style={styles.actionButtonText}>View Pending</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={styles.actionButton}
-            onPress={() => navigation.navigate('CompletedOrders')}
-          >
-            <Text style={styles.actionButtonText}>View Completed</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+      ) : (
+        <FlatList
+          data={orders}
+          renderItem={renderOrder}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.ordersList}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          ListEmptyComponent={() => (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyStateText}>No orders found</Text>
+              <Text style={styles.emptyStateSubtext}>
+                New orders will appear here
+              </Text>
+            </View>
+          )}
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -216,15 +263,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333333',
   },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: {
+  orderStatus: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#FFFFFF',
   },
   customerName: {
     fontSize: 14,
@@ -267,6 +308,58 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+  },
+  loadingText: {
+    marginTop: 10,
+    color: '#666666',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#F5F5F5',
+  },
+  errorText: {
+    color: '#FF6B35',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 15,
+  },
+  retryButton: {
+    backgroundColor: '#FF6B35',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#F5F5F5',
+  },
+  emptyStateText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333333',
+    marginBottom: 8,
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: '#666666',
+    textAlign: 'center',
   },
 });
 

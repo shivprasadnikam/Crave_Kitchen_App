@@ -7,83 +7,89 @@ import {
   SafeAreaView,
   ScrollView,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
-const AnalyticsDashboardScreen = ({ navigation }) => {
+const AnalyticsDashboardScreen = () => {
+  const navigation = useNavigation();
+
   const analyticsCards = [
     {
+      id: '1',
       title: 'Revenue Analytics',
-      description: 'Track your revenue trends and performance',
+      description: 'Track your sales and revenue trends',
       icon: '💰',
       screen: 'RevenueAnalytics',
     },
     {
+      id: '2',
       title: 'Order Analytics',
-      description: 'Analyze order patterns and customer behavior',
+      description: 'Analyze order patterns and performance',
       icon: '📊',
       screen: 'OrderAnalytics',
     },
     {
+      id: '3',
       title: 'Customer Analytics',
-      description: 'Understand your customer base and preferences',
+      description: 'Understand your customer behavior',
       icon: '👥',
       screen: 'CustomerAnalytics',
     },
     {
+      id: '4',
       title: 'Popular Items',
       description: 'See your best-selling menu items',
-      icon: '🔥',
+      icon: '🍽️',
       screen: 'PopularItems',
     },
   ];
+
+  const renderAnalyticsCard = (card) => (
+    <TouchableOpacity
+      key={card.id}
+      style={styles.analyticsCard}
+      onPress={() => navigation.navigate(card.screen)}
+    >
+      <Text style={styles.cardIcon}>{card.icon}</Text>
+      <Text style={styles.cardTitle}>{card.title}</Text>
+      <Text style={styles.cardDescription}>{card.description}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Analytics</Text>
+          <Text style={styles.headerTitle}>Analytics Dashboard</Text>
           <Text style={styles.headerSubtitle}>Track your business performance</Text>
         </View>
 
         {/* Analytics Cards */}
         <View style={styles.content}>
-          {analyticsCards.map((card, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.analyticsCard}
-              onPress={() => navigation.navigate(card.screen)}
-            >
-              <View style={styles.cardHeader}>
-                <Text style={styles.cardIcon}>{card.icon}</Text>
-                <Text style={styles.cardTitle}>{card.title}</Text>
-              </View>
-              <Text style={styles.cardDescription}>{card.description}</Text>
-              <View style={styles.cardArrow}>
-                <Text style={styles.arrowText}>›</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
+          <View style={styles.analyticsGrid}>
+            {analyticsCards.map(renderAnalyticsCard)}
+          </View>
         </View>
 
         {/* Quick Stats */}
         <View style={styles.statsSection}>
-          <Text style={styles.sectionTitle}>Quick Overview</Text>
+          <Text style={styles.sectionTitle}>Quick Stats</Text>
           <View style={styles.statsGrid}>
             <View style={styles.statCard}>
               <Text style={styles.statValue}>$2,450</Text>
               <Text style={styles.statLabel}>Today's Revenue</Text>
             </View>
             <View style={styles.statCard}>
-              <Text style={styles.statValue}>24</Text>
+              <Text style={styles.statValue}>45</Text>
               <Text style={styles.statLabel}>Orders Today</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statValue}>89%</Text>
-              <Text style={styles.statLabel}>Customer Satisfaction</Text>
             </View>
             <View style={styles.statCard}>
               <Text style={styles.statValue}>12</Text>
               <Text style={styles.statLabel}>New Customers</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statValue}>4.8★</Text>
+              <Text style={styles.statLabel}>Avg Rating</Text>
             </View>
           </View>
         </View>

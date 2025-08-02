@@ -12,7 +12,7 @@ const CURRENT_ENV = ENV.DEVELOPMENT;
 
 const API_CONFIGS = {
   [ENV.DEVELOPMENT]: {
-    BASE_URL: 'http://192.168.1.4:9090',
+    BASE_URL: 'http://192.168.1.4:9090', // Use your computer's IP address
     TIMEOUT: 10000,
     RETRY_ATTEMPTS: 3,
   },
@@ -49,13 +49,30 @@ const ENDPOINTS = {
     UPDATE_BUSINESS_HOURS: '/api/vendor/business-hours',
   },
   
-  // Menu Management
+  // Menu Management - Updated with comprehensive endpoints
   MENU: {
-    ITEMS: '/api/menu/items',
+    // Categories
     CATEGORIES: '/api/menu/categories',
-    ADD_ITEM: '/api/menu/items',
-    UPDATE_ITEM: '/api/menu/items',
-    DELETE_ITEM: '/api/menu/items',
+    CATEGORY_BY_ID: (id) => `/api/menu/categories/${id}`,
+    
+    // Menu Items
+    ITEMS: '/api/menu/items',
+    ITEM_BY_ID: (id) => `/api/menu/items/${id}`,
+    ITEM_SEARCH: '/api/menu/items/search',
+    
+    // Menu Item Images
+    ITEM_IMAGES: (itemId) => `/api/menu/items/${itemId}/images`,
+    ITEM_IMAGE_BY_ID: (itemId, imageId) => `/api/menu/items/${itemId}/images/${imageId}`,
+    SET_PRIMARY_IMAGE: (itemId, imageId) => `/api/menu/items/${itemId}/images/${imageId}/primary`,
+    
+    // Menu Item Availability
+    ITEM_AVAILABILITY: (itemId) => `/api/menu/items/${itemId}/availability`,
+    ITEM_SPECIAL_OFFERS: (itemId) => `/api/menu/items/${itemId}/special-offers`,
+    
+    // Menu Overview & Analytics
+    OVERVIEW: '/api/menu/overview',
+    FEATURED: '/api/menu/featured',
+    DIETARY_PREFERENCES: '/api/menu/dietary-preferences',
   },
   
   // Orders

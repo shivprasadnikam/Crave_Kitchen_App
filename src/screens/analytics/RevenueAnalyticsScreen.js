@@ -8,41 +8,16 @@ import {
   ScrollView,
   FlatList,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
-const RevenueAnalyticsScreen = ({ navigation }) => {
+const RevenueAnalyticsScreen = () => {
+  const navigation = useNavigation();
+
   const revenueData = [
-    {
-      id: '1',
-      period: 'Today',
-      revenue: '$245.75',
-      orders: 8,
-      growth: '+12%',
-      trend: 'up',
-    },
-    {
-      id: '2',
-      period: 'This Week',
-      revenue: '$1,180.50',
-      orders: 42,
-      growth: '+8%',
-      trend: 'up',
-    },
-    {
-      id: '3',
-      period: 'This Month',
-      revenue: '$4,250.00',
-      orders: 156,
-      growth: '+15%',
-      trend: 'up',
-    },
-    {
-      id: '4',
-      period: 'Last Month',
-      revenue: '$3,680.25',
-      orders: 142,
-      growth: '-3%',
-      trend: 'down',
-    },
+    { period: 'Today', revenue: 2450, orders: 45 },
+    { period: 'This Week', revenue: 15680, orders: 312 },
+    { period: 'This Month', revenue: 67890, orders: 1245 },
+    { period: 'This Year', revenue: 456789, orders: 8923 },
   ];
 
   const topItems = [
@@ -80,17 +55,11 @@ const RevenueAnalyticsScreen = ({ navigation }) => {
     return trend === 'up' ? '#4CAF50' : '#FF4444';
   };
 
-  const renderRevenueCard = ({ item }) => (
-    <View style={styles.revenueCard}>
-      <View style={styles.revenueHeader}>
-        <Text style={styles.revenuePeriod}>{item.period}</Text>
-        <Text style={[styles.revenueGrowth, { color: getTrendColor(item.trend) }]}>
-          {item.growth}
-        </Text>
-      </View>
-      
-      <Text style={styles.revenueAmount}>{item.revenue}</Text>
-      <Text style={styles.revenueOrders}>{item.orders} orders</Text>
+  const renderRevenueCard = (data, index) => (
+    <View key={index} style={styles.revenueCard}>
+      <Text style={styles.periodText}>{data.period}</Text>
+      <Text style={styles.revenueValue}>${data.revenue.toLocaleString()}</Text>
+      <Text style={styles.ordersText}>{data.orders} orders</Text>
     </View>
   );
 
@@ -114,20 +83,15 @@ const RevenueAnalyticsScreen = ({ navigation }) => {
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Revenue Analytics</Text>
-          <Text style={styles.headerSubtitle}>Track your revenue performance</Text>
+          <Text style={styles.headerSubtitle}>Track your sales performance</Text>
         </View>
 
         {/* Revenue Overview */}
         <View style={styles.content}>
           <Text style={styles.sectionTitle}>Revenue Overview</Text>
-          <FlatList
-            data={revenueData}
-            renderItem={renderRevenueCard}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.revenueList}
-          />
+          <View style={styles.revenueGrid}>
+            {revenueData.map(renderRevenueCard)}
+          </View>
         </View>
 
         {/* Top Performing Items */}
@@ -140,6 +104,29 @@ const RevenueAnalyticsScreen = ({ navigation }) => {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.topItemsList}
           />
+        </View>
+
+        {/* Performance Metrics */}
+        <View style={styles.metricsSection}>
+          <Text style={styles.sectionTitle}>Performance Metrics</Text>
+          <View style={styles.metricsGrid}>
+            <View style={styles.metricCard}>
+              <Text style={styles.metricValue}>$54.44</Text>
+              <Text style={styles.metricLabel}>Average Order Value</Text>
+            </View>
+            <View style={styles.metricCard}>
+              <Text style={styles.metricValue}>15.2%</Text>
+              <Text style={styles.metricLabel}>Growth Rate</Text>
+            </View>
+            <View style={styles.metricCard}>
+              <Text style={styles.metricValue}>$2,450</Text>
+              <Text style={styles.metricLabel}>Daily Average</Text>
+            </View>
+            <View style={styles.metricCard}>
+              <Text style={styles.metricValue}>89%</Text>
+              <Text style={styles.metricLabel}>Customer Retention</Text>
+            </View>
+          </View>
         </View>
 
         {/* Quick Actions */}
@@ -300,6 +287,62 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  metricsSection: {
+    padding: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    marginTop: 12,
+  },
+  metricsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    flexWrap: 'wrap',
+    gap: 15,
+  },
+  metricCard: {
+    alignItems: 'center',
+    width: '45%',
+  },
+  metricValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FF6B35',
+  },
+  metricLabel: {
+    fontSize: 14,
+    color: '#666666',
+    marginTop: 4,
+  },
+  revenueGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  periodText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333333',
+    marginBottom: 4,
+  },
+  revenueValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    marginBottom: 4,
+  },
+  ordersText: {
+    fontSize: 12,
+    color: '#666666',
   },
 });
 

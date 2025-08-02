@@ -200,4 +200,15 @@ export const authService = {
 
   // Helper method to get API configuration
   getApiConfig: () => apiConfig,
+
+  // Helper method to get auth token
+  getAuthToken: async () => {
+    try {
+      const token = await AsyncStorage.getItem('auth_token');
+      return token;
+    } catch (error) {
+      console.error('Error getting auth token:', error);
+      return null;
+    }
+  },
 }; 

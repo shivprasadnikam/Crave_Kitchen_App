@@ -7,8 +7,11 @@ import {
   SafeAreaView,
   ScrollView,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
-const QuickActionsScreen = ({ navigation }) => {
+const QuickActionsScreen = () => {
+  const navigation = useNavigation();
+  
   const quickActions = [
     {
       id: '1',

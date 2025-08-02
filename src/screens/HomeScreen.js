@@ -4,35 +4,86 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  SafeAreaView,
   ScrollView,
 } from 'react-native';
-import { useAuth } from '../context/AuthContext';
+import { useNavigation } from '@react-navigation/native';
 
-const HomeScreen = ({ navigation }) => {
-  const { user, logout } = useAuth();
+const HomeScreen = () => {
+  const navigation = useNavigation();
 
-  const handleLogout = () => {
-    logout();
+  const handleGetStarted = () => {
+    navigation.navigate('VendorDashboard');
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Welcome to Crave Kitchen</Text>
-        <Text style={styles.subtitle}>Hello, {user?.name || 'Vendor'}!</Text>
-      </View>
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.scrollView}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Crave Kitchen</Text>
+          <Text style={styles.headerSubtitle}>
+            Restaurant Management Made Simple
+          </Text>
+        </View>
 
-      <View style={styles.content}>
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
-        
-        <TouchableOpacity 
-          style={styles.button}
-          onPress={handleLogout}
-        >
-          <Text style={styles.buttonText}>Logout</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+        {/* Hero Section */}
+        <View style={styles.heroSection}>
+          <Text style={styles.heroTitle}>Welcome to Crave Kitchen</Text>
+          <Text style={styles.heroSubtitle}>
+            Manage your restaurant operations with ease. From menu management to order processing, 
+            we've got everything you need to run your business efficiently.
+          </Text>
+        </View>
+
+        {/* Features */}
+        <View style={styles.featuresSection}>
+          <Text style={styles.sectionTitle}>Key Features</Text>
+          
+          <View style={styles.featureCard}>
+            <Text style={styles.featureIcon}>🍽️</Text>
+            <Text style={styles.featureTitle}>Menu Management</Text>
+            <Text style={styles.featureDescription}>
+              Create, edit, and organize your menu items with ease
+            </Text>
+          </View>
+
+          <View style={styles.featureCard}>
+            <Text style={styles.featureIcon}>📋</Text>
+            <Text style={styles.featureTitle}>Order Processing</Text>
+            <Text style={styles.featureDescription}>
+              Handle incoming orders and track their status in real-time
+            </Text>
+          </View>
+
+          <View style={styles.featureCard}>
+            <Text style={styles.featureIcon}>📊</Text>
+            <Text style={styles.featureTitle}>Analytics</Text>
+            <Text style={styles.featureDescription}>
+              Get insights into your business performance and trends
+            </Text>
+          </View>
+
+          <View style={styles.featureCard}>
+            <Text style={styles.featureIcon}>📦</Text>
+            <Text style={styles.featureTitle}>Inventory Management</Text>
+            <Text style={styles.featureDescription}>
+              Track stock levels and manage your ingredients efficiently
+            </Text>
+          </View>
+        </View>
+
+        {/* CTA Section */}
+        <View style={styles.ctaSection}>
+          <TouchableOpacity 
+            style={styles.ctaButton}
+            onPress={handleGetStarted}
+          >
+            <Text style={styles.ctaButtonText}>Get Started</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
@@ -41,24 +92,51 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F5F5',
   },
+  scrollView: {
+    flex: 1,
+  },
   header: {
     backgroundColor: '#FF6B35',
     padding: 20,
     alignItems: 'center',
   },
-  title: {
+  headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#FFFFFF',
     marginBottom: 8,
   },
-  subtitle: {
+  headerSubtitle: {
     fontSize: 16,
     color: '#FFFFFF',
     opacity: 0.9,
   },
-  content: {
+  heroSection: {
     padding: 20,
+    backgroundColor: '#FFFFFF',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  heroTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#212121',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  heroSubtitle: {
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  featuresSection: {
+    padding: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 20,
@@ -66,17 +144,44 @@ const styles = StyleSheet.create({
     color: '#212121',
     marginBottom: 16,
   },
-  button: {
-    backgroundColor: '#4A90E2',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
+  featureCard: {
+    backgroundColor: '#F0F0F0',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  buttonText: {
+  featureIcon: {
+    fontSize: 30,
+    marginRight: 15,
+  },
+  featureTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#212121',
+    marginBottom: 5,
+  },
+  featureDescription: {
+    fontSize: 14,
+    color: '#555',
+  },
+  ctaSection: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  ctaButton: {
+    backgroundColor: '#4A90E2',
+    borderRadius: 10,
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    width: '100%',
+    alignItems: 'center',
+  },
+  ctaButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 
