@@ -1,14 +1,10 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from 'react-native';
+import { View, Text, Alert, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../context/AuthContext';
-import { tr } from 'date-fns/locale';
+import { Button, Input, SimpleFooter } from '../../components/ui';
+import { colors, typography, spacing, commonStyles } from '../../theme/theme';
 
 const LoginScreen = () => {
   const { login } = useAuth();
@@ -61,84 +57,114 @@ const LoginScreen = () => {
   console.log('🎨 LoginScreen rendering with state:', { email, password: password ? '***' : '' });
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Crave Clock</Text>
-      <Text style={styles.subtitle}>Welcome Back</Text>
-      
-      <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={handleEmailChange}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          onFocus={() => console.log('📱 Email input focused')}
-          onBlur={() => console.log('📱 Email input blurred')}
+    <SafeAreaView style={styles.container}>
+      <LinearGradient
+        colors={[colors.primary[600], colors.primary[500], colors.primary[400]]}
+        style={styles.gradient}
+      >
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Crave Kitchen</Text>
+            <Text style={styles.subtitle}>Welcome back to your kitchen</Text>
+          </View>
+          
+          <View style={styles.form}>
+            <Input
+              label="Email Address"
+              placeholder="Enter your email"
+              value={email}
+              onChangeText={handleEmailChange}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              onFocus={() => console.log('📱 Email input focused')}
+              onBlur={() => console.log('📱 Email input blurred')}
+            />
+            
+            <Input
+              label="Password"
+              placeholder="Enter your password"
+              value={password}
+              onChangeText={handlePasswordChange}
+              secureTextEntry
+              onFocus={() => console.log('📱 Password input focused')}
+              onBlur={() => console.log('📱 Password input blurred')}
+            />
+            
+            <Button
+              title="Sign In"
+              onPress={handleLogin}
+              variant="primary"
+              size="large"
+              style={styles.loginButton}
+              onPressIn={() => console.log('👆 Login button pressed')}
+            />
+            
+            <Button
+              title="Forgot Password?"
+              onPress={() => console.log('Forgot password pressed')}
+              variant="ghost"
+              size="medium"
+              style={styles.forgotButton}
+            />
+          </View>
+        </View>
+
+        {/* Simple Footer */}
+        <SimpleFooter 
+          style={styles.footer}
         />
-        
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={handlePasswordChange}
-          secureTextEntry
-          onFocus={() => console.log('📱 Password input focused')}
-          onBlur={() => console.log('📱 Password input blurred')}
-        />
-        
-        <TouchableOpacity 
-          style={styles.button} 
-          onPress={handleLogin}
-          onPressIn={() => console.log('👆 Login button pressed')}
-        >
-          <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      </LinearGradient>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#FFFFFF',
+  },
+  gradient: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+  },
+  content: {
+    width: '100%',
+    maxWidth: 400,
+    paddingHorizontal: 24,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 40,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    fontSize: 36,
+    fontWeight: '700',
     color: '#FFFFFF',
     marginBottom: 8,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 18,
     color: '#FFFFFF',
-    marginBottom: 40,
+    opacity: 0.9,
+    textAlign: 'center',
   },
   form: {
     width: '100%',
-    maxWidth: 300,
   },
-  input: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-    fontSize: 16,
+  loginButton: {
+    marginTop: 16,
+    marginBottom: 12,
   },
-  button: {
-    backgroundColor: '#4A90E2',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
+  forgotButton: {
+    alignSelf: 'center',
   },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+  footer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
 });
 

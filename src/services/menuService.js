@@ -107,49 +107,7 @@ const apiCall = async (endpoint, options = {}) => {
   }
 };
 
-// Network connectivity test
-export const testNetworkConnection = async () => {
-  console.log(`[NETWORK TEST] Testing connection to backend...`);
-  
-  try {
-    const baseUrl = apiConfig.getCurrentConfig().BASE_URL;
-    console.log(`[NETWORK TEST] Base URL: ${baseUrl}`);
-    
-    // Test basic connectivity
-    const testUrl = `${baseUrl}/api/health`;
-    console.log(`[NETWORK TEST] Testing health endpoint: ${testUrl}`);
-    
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-    
-    const response = await fetch(testUrl, {
-      method: 'GET',
-      signal: controller.signal
-    });
-    
-    clearTimeout(timeoutId);
-    console.log(`[NETWORK TEST] Health check response: ${response.status}`);
-    
-    if (response.ok) {
-      console.log(`[NETWORK TEST] ✅ Connection successful!`);
-      return true;
-    } else {
-      console.log(`[NETWORK TEST] ⚠️ Server responded but with error: ${response.status}`);
-      return false;
-    }
-  } catch (error) {
-    console.error(`[NETWORK TEST] ❌ Connection failed:`, error.message);
-    console.error(`[NETWORK TEST] Error type: ${error.name}`);
-    
-    if (error.name === 'AbortError') {
-      console.error(`[NETWORK TEST] Timeout - server not responding`);
-    } else if (error.message.includes('Network request failed')) {
-      console.error(`[NETWORK TEST] Network error - check server and IP address`);
-    }
-    
-    return false;
-  }
-};
+
 
 // Helper function to build query parameters
 const buildQueryParams = (params = {}) => {
@@ -309,6 +267,8 @@ export const menuItemsService = {
       price: itemData.price,
       vendorId: itemData.vendorId
     });
+    
+    console.log(`[MENU ITEMS] Full request payload:`, JSON.stringify(itemData, null, 2));
     
     const endpoint = apiConfig.ENDPOINTS.MENU.ITEMS;
     

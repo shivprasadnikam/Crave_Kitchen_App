@@ -4,13 +4,14 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 const VendorDashboardScreen = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
   const dashboardStats = [
     {
@@ -99,12 +100,16 @@ const VendorDashboardScreen = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Dashboard</Text>
-          <Text style={styles.headerSubtitle}>Welcome back! Here's your overview</Text>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={{ paddingBottom: 40 + insets.bottom }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Welcome Section */}
+        <View style={styles.welcomeSection}>
+          <Text style={styles.welcomeTitle}>Welcome back!</Text>
+          <Text style={styles.welcomeSubtitle}>Here's your overview for today</Text>
         </View>
 
         {/* Stats Grid */}
@@ -115,41 +120,13 @@ const VendorDashboardScreen = () => {
           </View>
         </View>
 
-        {/* Quick Actions */}
-        <View style={styles.quickActionsSection}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-          <View style={styles.quickActionsGrid}>
-            {quickActions.map(renderQuickAction)}
-          </View>
-        </View>
-
-        {/* Recent Orders */}
-        <View style={styles.recentOrdersSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Orders</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('OrderList')}>
-              <Text style={styles.viewAllText}>View All</Text>
-            </TouchableOpacity>
-          </View>
-          
-          <View style={styles.orderCard}>
-            <View style={styles.orderHeader}>
-              <Text style={styles.orderNumber}>#ORD-001</Text>
-              <Text style={styles.orderStatus}>Preparing</Text>
-            </View>
-            <Text style={styles.orderItems}>Pizza Margherita, Coke</Text>
-            <Text style={styles.orderTime}>2 minutes ago</Text>
-          </View>
-          
-          <View style={styles.orderCard}>
-            <View style={styles.orderHeader}>
-              <Text style={styles.orderNumber}>#ORD-002</Text>
-              <Text style={styles.orderStatus}>Ready</Text>
-            </View>
-            <Text style={styles.orderItems}>Chicken Burger, Fries</Text>
-            <Text style={styles.orderTime}>15 minutes ago</Text>
-          </View>
-        </View>
+                 {/* Quick Actions */}
+         <View style={styles.quickActionsSection}>
+           <Text style={styles.sectionTitle}>Quick Actions</Text>
+           <View style={styles.quickActionsGrid}>
+             {quickActions.map(renderQuickAction)}
+           </View>
+         </View>        
       </ScrollView>
     </SafeAreaView>
   );
@@ -158,41 +135,40 @@ const VendorDashboardScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F8FAFC',
   },
   scrollView: {
     flex: 1,
+    paddingHorizontal: 16,
   },
-  header: {
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-    alignItems: 'center',
+  welcomeSection: {
+    paddingVertical: 32,
+    paddingHorizontal: 0,
+    alignItems: 'flex-start',
   },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#212121',
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1F2937',
     marginBottom: 4,
   },
-  headerSubtitle: {
+  welcomeSubtitle: {
     fontSize: 16,
     color: '#757575',
   },
   statsSection: {
-    margin: 16,
+    marginBottom: 20,
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 20,
-    elevation: 2,
+    elevation: 1,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 1,
     },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -243,18 +219,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   quickActionsSection: {
-    margin: 16,
+    marginBottom: 0,
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 20,
-    elevation: 2,
+    elevation: 1,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 1,
     },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
   },
   quickActionsGrid: {
     flexDirection: 'row',
@@ -288,68 +264,10 @@ const styles = StyleSheet.create({
     color: '#212121',
     textAlign: 'center',
   },
-  recentOrdersSection: {
-    margin: 16,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
     color: '#212121',
-  },
-  viewAllText: {
-    fontSize: 14,
-    color: '#FF6B35',
-    fontWeight: '500',
-  },
-  orderCard: {
-    backgroundColor: '#F9F9F9',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  orderHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  orderNumber: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#212121',
-  },
-  orderStatus: {
-    fontSize: 14,
-    color: '#4CAF50',
-    fontWeight: '600',
-  },
-  orderItems: {
-    fontSize: 14,
-    color: '#757575',
-    marginBottom: 8,
-  },
-  orderTime: {
-    fontSize: 12,
-    color: '#757575',
   },
 });
 

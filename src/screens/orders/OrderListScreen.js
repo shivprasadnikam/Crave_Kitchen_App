@@ -4,16 +4,17 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   FlatList,
   Alert,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 const OrderListScreen = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -133,19 +134,19 @@ const OrderListScreen = () => {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FF6B35" />
-          <Text style={styles.loadingText}>Loading orders...</Text>
+          <Text style={styles.loadingText}>Loading activity...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Orders</Text>
+        <Text style={styles.headerTitle}>Activity</Text>
         <Text style={styles.headerSubtitle}>
           {orders.length} active orders
         </Text>
@@ -164,16 +165,16 @@ const OrderListScreen = () => {
           renderItem={renderOrder}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.ordersList}
+          contentContainerStyle={[styles.ordersList, { paddingBottom: 80 + insets.bottom }]}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
           ListEmptyComponent={() => (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyStateText}>No orders found</Text>
-              <Text style={styles.emptyStateSubtext}>
-                New orders will appear here
-              </Text>
+                        <Text style={styles.emptyStateText}>No activity found</Text>
+          <Text style={styles.emptyStateSubtext}>
+            New orders and activities will appear here
+          </Text>
             </View>
           )}
         />
@@ -185,13 +186,14 @@ const OrderListScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F8FAFC',
   },
   scrollView: {
     flex: 1,
   },
   header: {
-    padding: 20,
+    paddingVertical: 32,
+    paddingHorizontal: 16,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',

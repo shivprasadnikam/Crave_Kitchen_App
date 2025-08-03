@@ -117,18 +117,26 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const response = await authService.login(email, password);
-      const { user, token, refreshToken } = response;
+      const { user, token, refreshToken, vendorId, vendorName, vendorEmail } = response;
+
+      // Create enhanced user object with vendor information
+      const enhancedUser = {
+        ...user,
+        vendorId,
+        vendorName,
+        vendorEmail,
+      };
 
       // Store in AsyncStorage
       await AsyncStorage.setItem('auth_token', token);
       if (refreshToken) {
         await AsyncStorage.setItem('refresh_token', refreshToken);
       }
-      await AsyncStorage.setItem('user_data', JSON.stringify(user));
+      await AsyncStorage.setItem('user_data', JSON.stringify(enhancedUser));
 
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
-        payload: { user, token },
+        payload: { user: enhancedUser, token },
       });
 
       return { success: true };

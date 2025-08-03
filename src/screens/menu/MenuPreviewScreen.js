@@ -33,7 +33,7 @@ const MenuPreviewScreen = () => {
       setLoading(true);
       setError(null);
       
-      const vendorId = user?.vendorProfileId || user?.id || 1; // Fallback to 1 for testing
+      const vendorId = user?.vendorProfileId || user?.id;
       
       // Load menu overview and featured items in parallel
       const [overviewResponse, featuredResponse] = await Promise.all([
