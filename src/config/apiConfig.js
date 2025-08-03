@@ -73,6 +73,12 @@ const ENDPOINTS = {
     OVERVIEW: '/api/menu/overview',
     FEATURED: '/api/menu/featured',
     DIETARY_PREFERENCES: '/api/menu/dietary-preferences',
+    
+    // Menu Analytics
+    ANALYTICS: '/api/menu/analytics',
+    TOP_PERFORMING_ITEMS: '/api/menu/analytics/top-performing',
+    LOW_PERFORMING_ITEMS: '/api/menu/analytics/low-performing',
+    CATEGORY_PERFORMANCE: '/api/menu/analytics/category-performance',
   },
   
   // Orders
@@ -89,6 +95,11 @@ const ENDPOINTS = {
     REVENUE: '/api/analytics/revenue',
     ORDERS: '/api/analytics/orders',
     POPULAR_ITEMS: '/api/analytics/popular-items',
+    REVENUE_OVERVIEW: '/api/analytics/revenue/overview',
+    REVENUE_TRENDS: '/api/analytics/revenue/trends',
+    TOP_PERFORMING_ITEMS: '/api/analytics/revenue/top-items',
+    ORDER_ANALYTICS: '/api/analytics/orders/analytics',
+    ORDER_TRENDS: '/api/analytics/orders/trends',
   },
   
   // Inventory

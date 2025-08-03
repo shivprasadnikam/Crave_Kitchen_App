@@ -53,14 +53,16 @@ const MenuManagementScreen = () => {
       setLoading(true);
       setError(null);
       
-      const vendorId = user?.vendorProfileId || user?.id;
-      console.log(`[MENU MANAGEMENT] Loading menu data for vendor: ${vendorId}`);
+      const vendorId = user?.vendorId || user?.id;
+      
+      if (!vendorId) {
+        throw new Error('Vendor ID not found. Please log in again.');
+      }
       
       const data = await menuService.getMenuManagementData(vendorId);
       
       setMenuItems(data.menuItems || []);
       setCategories(data.categories || []);
-      console.log(`[MENU MANAGEMENT] Loaded ${data.menuItems?.length || 0} items and ${data.categories?.length || 0} categories`);
     } catch (error) {
       console.error('[MENU MANAGEMENT] Error loading menu data:', error);
       setError('Failed to load menu data');
@@ -70,17 +72,14 @@ const MenuManagementScreen = () => {
   };
 
   const onRefresh = async () => {
-    console.log('[MENU MANAGEMENT] Pull-to-refresh triggered');
     setRefreshing(true);
     await loadData();
     setRefreshing(false);
   };
 
   const handleToggleAvailability = async (itemId, isAvailable) => {
-    console.log(`[MENU MANAGEMENT] Toggling availability for item ${itemId} to: ${isAvailable}`);
     try {
       await menuService.toggleItemAvailability(itemId, isAvailable);
-      console.log(`[MENU MANAGEMENT] Availability toggled successfully for item ${itemId}`);
       // Refresh the data to show updated status
       await loadData();
     } catch (error) {
@@ -90,12 +89,10 @@ const MenuManagementScreen = () => {
   };
 
   const handleEditItem = (item) => {
-    console.log(`[MENU MANAGEMENT] Edit item pressed for: ${item.name} (ID: ${item.id})`);
     navigation.navigate('EditMenuItem', { itemId: item.id });
   };
 
   const handleDeleteItem = (item) => {
-    console.log(`[MENU MANAGEMENT] Delete item pressed for: ${item.name} (ID: ${item.id})`);
     Alert.alert(
       'Delete Item',
       `Are you sure you want to delete "${item.name}"?`,
@@ -111,10 +108,8 @@ const MenuManagementScreen = () => {
   };
 
   const performDeleteItem = async (itemId) => {
-    console.log(`[MENU MANAGEMENT] Performing delete for item: ${itemId}`);
     try {
       await menuService.deleteItem(itemId);
-      console.log(`[MENU MANAGEMENT] Item ${itemId} deleted successfully`);
       // Refresh the data
       await loadData();
     } catch (error) {
@@ -223,7 +218,6 @@ const MenuManagementScreen = () => {
       );
       await Promise.all(promises);
       
-      console.log(`[MENU MANAGEMENT] Bulk availability toggle completed for ${itemIds.length} items`);
       await loadData();
       setSelectedItems(new Set());
       setSelectionMode(false);
@@ -257,13 +251,10 @@ const MenuManagementScreen = () => {
   };
 
   const performBulkDelete = async (itemIds) => {
-    console.log(`[MENU MANAGEMENT] Performing bulk delete for ${itemIds.length} items`);
-    
     try {
       const promises = itemIds.map(itemId => menuService.deleteItem(itemId));
       await Promise.all(promises);
       
-      console.log(`[MENU MANAGEMENT] Bulk delete completed for ${itemIds.length} items`);
       await loadData();
       setSelectedItems(new Set());
       setSelectionMode(false);
@@ -323,7 +314,7 @@ const MenuManagementScreen = () => {
         </View>
       </View>
       
-      <Text style={styles.menuPrice}>${item.price}</Text>
+      <Text style={styles.menuPrice}>₹{item.price}</Text>
       <Text style={styles.menuCategory}>{item.categoryName || 'Uncategorized'}</Text>
       {item.description && (
         <Text style={styles.menuDescription} numberOfLines={2}>
@@ -412,33 +403,39 @@ const MenuManagementScreen = () => {
             <View style={styles.actions}>
               {!selectionMode ? (
                 <>
-                  <TouchableOpacity 
-                    style={styles.addButton}
-                    onPress={() => navigation.navigate('AddMenuItem')}
-                  >
-                    <Text style={styles.addButtonText}>Add New Item</Text>
-                  </TouchableOpacity>
+                  {/* Primary Actions Row */}
+                  <View style={styles.primaryActions}>
+                    <TouchableOpacity 
+                      style={styles.addButton}
+                      onPress={() => navigation.navigate('AddMenuItem')}
+                    >
+                      <Text style={styles.addButtonText}>Add New Item</Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                      style={styles.categoryButton}
+                      onPress={() => navigation.navigate('CategoryManagement')}
+                    >
+                      <Text style={styles.categoryButtonText}>Manage Categories</Text>
+                    </TouchableOpacity>
+                  </View>
                   
-                  <TouchableOpacity 
-                    style={styles.categoryButton}
-                    onPress={() => navigation.navigate('CategoryManagement')}
-                  >
-                    <Text style={styles.categoryButtonText}>Manage Categories</Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={styles.bulkButton}
-                    onPress={toggleSelectionMode}
-                  >
-                    <Text style={styles.bulkButtonText}>Select Items</Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={styles.analyticsButton}
-                    onPress={() => navigation.navigate('MenuAnalytics')}
-                  >
-                    <Text style={styles.analyticsButtonText}>Analytics</Text>
-                  </TouchableOpacity>
+                  {/* Secondary Actions Row */}
+                  <View style={styles.secondaryActions}>
+                    <TouchableOpacity 
+                      style={styles.bulkButton}
+                      onPress={toggleSelectionMode}
+                    >
+                      <Text style={styles.bulkButtonText}>Select Items</Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                      style={styles.analyticsButton}
+                      onPress={() => navigation.navigate('MenuAnalytics')}
+                    >
+                      <Text style={styles.analyticsButtonText}>Analytics</Text>
+                    </TouchableOpacity>
+                  </View>
                 </>
               ) : (
                 <>
@@ -716,17 +713,33 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   actions: {
-    flexDirection: 'row',
     paddingHorizontal: 16,
     paddingVertical: 20,
+    gap: 12,
+  },
+  primaryActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 8,
+  },
+  secondaryActions: {
+    flexDirection: 'row',
     gap: 12,
   },
   addButton: {
     flex: 1,
     backgroundColor: '#FF6B35',
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 16,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   addButtonText: {
     color: '#FFFFFF',
@@ -736,9 +749,17 @@ const styles = StyleSheet.create({
   categoryButton: {
     flex: 1,
     backgroundColor: '#4A90E2',
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 16,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   categoryButtonText: {
     color: '#FFFFFF',
@@ -1086,76 +1107,55 @@ const styles = StyleSheet.create({
   // Bulk Operations Styles
   menuCardSelected: {
     borderColor: '#FF6B35',
-    borderWidth: 2,
+    borderWidth: 3,
+    shadowColor: '#FF6B35',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
+    transform: [{ scale: 1.02 }],
   },
   selectionIndicator: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     borderWidth: 2,
     borderColor: '#E0E0E0',
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   selectionIndicatorSelected: {
     borderColor: '#FF6B35',
     backgroundColor: '#FF6B35',
+    shadowColor: '#FF6B35',
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
   },
   selectionIndicatorText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#FFFFFF',
     fontWeight: 'bold',
   },
   bulkButton: {
-    backgroundColor: '#4A90E2',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
-  },
-  bulkButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  analyticsButton: {
-    backgroundColor: '#4CAF50',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
-  },
-  analyticsButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  cancelButton: {
-    backgroundColor: '#FF4444',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  selectAllButton: {
-    backgroundColor: '#4CAF50',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
-  },
-  selectAllButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  bulkActions: {
-    backgroundColor: '#FFFFFF',
+    flex: 1,
+    backgroundColor: '#6C757D',
     borderRadius: 12,
-    padding: 16,
+    padding: 14,
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -1165,23 +1165,111 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  bulkActionsTitle: {
+  bulkButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  analyticsButton: {
+    flex: 1,
+    backgroundColor: '#4CAF50',
+    borderRadius: 12,
+    padding: 14,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  analyticsButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#FF4444',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  cancelButtonText: {
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  selectAllButton: {
+    flex: 1,
+    backgroundColor: '#4CAF50',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  selectAllButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  bulkActions: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  bulkActionsTitle: {
+    fontSize: 18,
+    fontWeight: '700',
     color: '#333333',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   bulkActionButtons: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 12,
   },
   bulkActionButton: {
     flex: 1,
     backgroundColor: '#4A90E2',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 12,
+    padding: 14,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   bulkActionButtonText: {
     color: '#FFFFFF',

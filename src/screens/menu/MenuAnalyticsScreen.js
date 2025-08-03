@@ -33,40 +33,40 @@ const MenuAnalyticsScreen = () => {
       setLoading(true);
       setError(null);
       
-      const vendorId = user?.vendorProfileId || user?.id || 1;
+      const vendorId = user?.vendorId || user?.id || 1;
       console.log(`[MENU ANALYTICS] Loading analytics for vendor: ${vendorId}`);
       
-      // Load menu overview and featured items for analytics
-      const data = await menuService.getMenuPreviewData(vendorId);
+      if (!vendorId) {
+        throw new Error('Vendor ID not found. Please log in again.');
+      }
       
-      // Mock analytics data (replace with real API calls)
-      const mockAnalytics = {
-        totalItems: data.overview?.totalItems || 0,
-        availableItems: data.overview?.availableItems || 0,
-        featuredItems: data.featuredItems?.length || 0,
-        totalCategories: data.overview?.totalCategories || 0,
-        averagePrice: data.overview?.averagePrice || 0,
-        topPerformingItems: [
-          { id: 1, name: 'Margherita Pizza', orders: 45, revenue: 675.00, rating: 4.8 },
-          { id: 2, name: 'Chicken Wings', orders: 38, revenue: 456.00, rating: 4.6 },
-          { id: 3, name: 'Caesar Salad', orders: 32, revenue: 256.00, rating: 4.7 },
-        ],
-        lowPerformingItems: [
-          { id: 4, name: 'Mushroom Soup', orders: 3, revenue: 24.00, rating: 4.2 },
-          { id: 5, name: 'Fish Tacos', orders: 5, revenue: 45.00, rating: 4.1 },
-        ],
-        categoryPerformance: [
-          { name: 'Pizzas', items: 8, orders: 120, revenue: 1800.00 },
-          { name: 'Appetizers', items: 12, orders: 85, revenue: 680.00 },
-          { name: 'Salads', items: 6, orders: 45, revenue: 360.00 },
-          { name: 'Desserts', items: 4, orders: 25, revenue: 200.00 },
-        ]
+      // Load real analytics data from API
+      const analyticsData = await menuService.getMenuAnalyticsData(vendorId);
+      
+      // Load menu overview for additional context
+      const menuData = await menuService.getMenuPreviewData(vendorId);
+      
+      // Combine analytics data with menu overview
+      const combinedAnalytics = {
+        totalItems: menuData.overview?.totalItems || analyticsData.totalItems || 0,
+        availableItems: menuData.overview?.availableItems || analyticsData.availableItems || 0,
+        featuredItems: menuData.featuredItems?.length || analyticsData.featuredItems || 0,
+        totalCategories: menuData.overview?.totalCategories || analyticsData.totalCategories || 0,
+        averagePrice: menuData.overview?.averagePrice || analyticsData.averagePrice || 0,
+        topPerformingItems: analyticsData.topPerformingItems || [],
+        lowPerformingItems: analyticsData.lowPerformingItems || [],
+        categoryPerformance: analyticsData.categoryPerformance || []
       };
       
-      setAnalytics(mockAnalytics);
-      setPopularItems(data.featuredItems || []);
+      setAnalytics(combinedAnalytics);
+      setPopularItems(menuData.featuredItems || []);
       
-      console.log(`[MENU ANALYTICS] Loaded analytics data`);
+      console.log(`[MENU ANALYTICS] Loaded real analytics data:`, {
+        totalItems: combinedAnalytics.totalItems,
+        topItemsCount: combinedAnalytics.topPerformingItems.length,
+        lowItemsCount: combinedAnalytics.lowPerformingItems.length,
+        categoryCount: combinedAnalytics.categoryPerformance.length
+      });
     } catch (error) {
       console.error('[MENU ANALYTICS] Error loading analytics:', error);
       setError('Failed to load analytics data');
@@ -98,7 +98,7 @@ const MenuAnalyticsScreen = () => {
       <View style={styles.topItemInfo}>
         <Text style={styles.topItemName}>{item.name}</Text>
         <Text style={styles.topItemStats}>
-          {item.orders} orders • ${item.revenue.toFixed(2)} • ⭐ {item.rating}
+          {item.orders} orders • ₹{item.revenue.toFixed(2)} • ⭐ {item.rating}
         </Text>
       </View>
     </View>
@@ -112,7 +112,7 @@ const MenuAnalyticsScreen = () => {
       </View>
       <View style={styles.categoryStats}>
         <Text style={styles.categoryOrders}>{item.orders} orders</Text>
-        <Text style={styles.categoryRevenue}>${item.revenue.toFixed(2)}</Text>
+        <Text style={styles.categoryRevenue}>₹{item.revenue.toFixed(2)}</Text>
       </View>
     </View>
   );

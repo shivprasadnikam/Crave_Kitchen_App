@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,49 +7,69 @@ import {
   SafeAreaView,
   ScrollView,
   FlatList,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../../context/AuthContext';
+import { analyticsService } from '../../services/analyticsService';
 
 const RevenueAnalyticsScreen = () => {
   const navigation = useNavigation();
+  const { user } = useAuth();
+  
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
 
-  const revenueData = [
-    { period: 'Today', revenue: 2450, orders: 45 },
-    { period: 'This Week', revenue: 15680, orders: 312 },
-    { period: 'This Month', revenue: 67890, orders: 1245 },
-    { period: 'This Year', revenue: 456789, orders: 8923 },
+  useEffect(() => {
+    loadAnalytics();
+  }, []);
+
+  const loadAnalytics = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const vendorId = user?.vendorId || user?.id || 1;
+      console.log(`[REVENUE ANALYTICS] Loading analytics for vendor: ${vendorId}`);
+      
+      if (!vendorId) {
+        throw new Error('Vendor ID not found. Please log in again.');
+      }
+      
+      const data = await analyticsService.getAnalyticsData(vendorId, 'month');
+      setAnalyticsData(data);
+      
+      console.log(`[REVENUE ANALYTICS] Loaded analytics data:`, {
+        revenueOverview: !!data.revenueOverview,
+        topItemsCount: data.topPerformingItems?.length || 0
+      });
+    } catch (error) {
+      console.error('[REVENUE ANALYTICS] Error loading analytics:', error);
+      setError('Failed to load analytics data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    console.log('[REVENUE ANALYTICS] Pull-to-refresh triggered');
+    setRefreshing(true);
+    await loadAnalytics();
+    setRefreshing(false);
+  };
+
+  // Fallback data if API fails
+  const revenueData = analyticsData?.revenueOverview || [
+    { period: 'Today', revenue: 0, orders: 0 },
+    { period: 'This Week', revenue: 0, orders: 0 },
+    { period: 'This Month', revenue: 0, orders: 0 },
+    { period: 'This Year', revenue: 0, orders: 0 },
   ];
 
-  const topItems = [
-    {
-      id: '1',
-      name: 'Pizza Margherita',
-      revenue: '$450.00',
-      orders: 18,
-      percentage: '18%',
-    },
-    {
-      id: '2',
-      name: 'Chicken Burger',
-      revenue: '$380.50',
-      orders: 15,
-      percentage: '15%',
-    },
-    {
-      id: '3',
-      name: 'Pasta Carbonara',
-      revenue: '$320.75',
-      orders: 12,
-      percentage: '13%',
-    },
-    {
-      id: '4',
-      name: 'Caesar Salad',
-      revenue: '$280.25',
-      orders: 10,
-      percentage: '11%',
-    },
-  ];
+  const topItems = analyticsData?.topPerformingItems || [];
 
   const getTrendColor = (trend) => {
     return trend === 'up' ? '#4CAF50' : '#FF4444';
@@ -58,7 +78,7 @@ const RevenueAnalyticsScreen = () => {
   const renderRevenueCard = (data, index) => (
     <View key={index} style={styles.revenueCard}>
       <Text style={styles.periodText}>{data.period}</Text>
-      <Text style={styles.revenueValue}>${data.revenue.toLocaleString()}</Text>
+              <Text style={styles.revenueValue}>₹{data.revenue.toLocaleString()}</Text>
       <Text style={styles.ordersText}>{data.orders} orders</Text>
     </View>
   );
@@ -77,9 +97,38 @@ const RevenueAnalyticsScreen = () => {
     </View>
   );
 
+  if (loading && !refreshing) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF6B35" />
+          <Text style={styles.loadingText}>Loading analytics...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error && !refreshing) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Error: {error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={loadAnalytics}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView 
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Revenue Analytics</Text>
@@ -111,7 +160,7 @@ const RevenueAnalyticsScreen = () => {
           <Text style={styles.sectionTitle}>Performance Metrics</Text>
           <View style={styles.metricsGrid}>
             <View style={styles.metricCard}>
-              <Text style={styles.metricValue}>$54.44</Text>
+              <Text style={styles.metricValue}>₹54.44</Text>
               <Text style={styles.metricLabel}>Average Order Value</Text>
             </View>
             <View style={styles.metricCard}>
@@ -157,6 +206,39 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666666',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#FF4444',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: '#FF6B35',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   header: {
     padding: 20,

@@ -79,21 +79,17 @@ const AddMenuItemScreen = () => {
 
   const loadCategories = async () => {
     try {
-      console.log(`[ADD MENU ITEM] Loading categories for vendor: ${user?.vendorId || 1}`); 
       const vendorId = user?.vendorId || 1;
-      console.log(`[ADD MENU ITEM] Calling category API for vendor: ${vendorId}`);
+      
       const response = await menuCategoriesService.getAllCategories(vendorId);
       
       if (response.success && response.data?.content) {
         setCategories(response.data.content);
-        console.log(`[ADD MENU ITEM] Loaded ${response.data.content.length} categories`);
       } else {
-        console.error(`[ADD MENU ITEM] Failed to load categories:`, response);
-        Alert.alert('Error', 'Failed to load categories');
+        setCategories([]);
       }
     } catch (error) {
-      console.error(`[ADD MENU ITEM] Error loading categories:`, error);
-      Alert.alert('Error', 'Failed to load categories. Please try again.');
+      setCategories([]);
     }
   };
 
@@ -110,7 +106,7 @@ const AddMenuItemScreen = () => {
     if (!formData.price || parseFloat(formData.price) <= 0) {
       errors.price = 'Price must be a positive number';
     } else if (parseFloat(formData.price) > 999.99) {
-      errors.price = 'Price cannot exceed $999.99';
+      errors.price = 'Price cannot exceed ₹999.99';
     }
     
     if (!formData.categoryId) {
@@ -162,7 +158,7 @@ const AddMenuItemScreen = () => {
         if (!value || parseFloat(value) <= 0) {
           fieldErrors.price = 'Price must be a positive number';
         } else if (parseFloat(value) > 999.99) {
-          fieldErrors.price = 'Price cannot exceed $999.99';
+          fieldErrors.price = 'Price cannot exceed ₹999.99';
         } else {
           delete fieldErrors.price;
         }
@@ -186,10 +182,7 @@ const AddMenuItemScreen = () => {
   };
 
   const handleSave = async () => {
-    console.log(`[ADD MENU ITEM] Save button pressed`);
-    
     const validation = validateForm();
-    console.log(`[ADD MENU ITEM] Form validation result: ${validation.isValid ? 'PASS' : 'FAIL'}`, validation.errors);
     
     if (!validation.isValid) {
       Alert.alert('Validation Error', Object.values(validation.errors).join('\n'));
@@ -209,22 +202,13 @@ const AddMenuItemScreen = () => {
         calories: parseInt(formData.calories) || 0,
       };
 
-      console.log(`[ADD MENU ITEM] Creating menu item with data:`, {
-        name: itemData.name,
-        price: itemData.price,
-        categoryId: itemData.categoryId,
-        vendorId: itemData.vendorId
-      });
-
       const response = await menuItemsService.createItem(itemData);
       
       if (response.success) {
-        console.log(`[ADD MENU ITEM] Menu item created successfully:`, response.data?.name);
         Alert.alert('Success', 'Menu item created successfully!', [
           {
             text: 'OK',
             onPress: () => {
-              console.log(`[ADD MENU ITEM] Navigating back after successful creation`);
               navigation.goBack();
             }
           }
@@ -252,26 +236,16 @@ const AddMenuItemScreen = () => {
     }
 
     try {
-      const vendorId = user?.vendorId || 1;
+      const vendorId = user?.vendorId || user?.id || 1;
       
-      console.log(`[ADD MENU ITEM] Creating new category:`, {
-        name: newCategoryData.name,
-        description: newCategoryData.description,
-        vendorId: vendorId
-      });
-
       const categoryData = {
         ...newCategoryData,
         vendorId,
       };
-      
-      console.log(`[ADD MENU ITEM] Full category request payload:`, JSON.stringify(categoryData, null, 2));
 
       const response = await menuCategoriesService.createCategory(categoryData);
 
       if (response.success) {
-        console.log(`[ADD MENU ITEM] Category created successfully:`, response.data?.name);
-        
         // Refresh categories and select the new one
         await loadCategories();
         
@@ -333,56 +307,26 @@ const AddMenuItemScreen = () => {
     setShowTemplates(false);
   };
 
-  const menuTemplates = [
-    {
-      name: 'Pizza',
+  // Dynamic template generation based on categories
+  const generateTemplates = () => {
+    if (!categories.length) return [];
+    
+    return categories.slice(0, 4).map(category => ({
+      name: category.name,
       data: {
-        name: 'Margherita Pizza',
-        description: 'Classic Italian pizza with fresh mozzarella, tomato sauce, and basil',
-        price: '14.99',
-        preparationTime: '20',
-        calories: '285',
-        spiceLevel: 'mild',
-        dietaryInfo: { ...formData.dietaryInfo, isVegetarian: true },
-      }
-    },
-    {
-      name: 'Burger',
-      data: {
-        name: 'Classic Cheeseburger',
-        description: 'Juicy beef patty with cheese, lettuce, tomato, and special sauce',
-        price: '12.99',
+        name: `New ${category.name}`,
+        description: `Delicious ${category.name.toLowerCase()} item`,
+        price: '0.00',
         preparationTime: '15',
-        calories: '450',
+        calories: '250',
         spiceLevel: 'mild',
+        categoryId: category.id,
         dietaryInfo: { ...formData.dietaryInfo },
       }
-    },
-    {
-      name: 'Salad',
-      data: {
-        name: 'Caesar Salad',
-        description: 'Fresh romaine lettuce with Caesar dressing, croutons, and parmesan',
-        price: '9.99',
-        preparationTime: '10',
-        calories: '180',
-        spiceLevel: 'mild',
-        dietaryInfo: { ...formData.dietaryInfo, isVegetarian: true },
-      }
-    },
-    {
-      name: 'Pasta',
-      data: {
-        name: 'Spaghetti Carbonara',
-        description: 'Classic Italian pasta with eggs, cheese, pancetta, and black pepper',
-        price: '16.99',
-        preparationTime: '25',
-        calories: '520',
-        spiceLevel: 'medium',
-        dietaryInfo: { ...formData.dietaryInfo },
-      }
-    },
-  ];
+    }));
+  };
+
+  const menuTemplates = generateTemplates();
 
   const renderInput = (label, value, onChangeText, placeholder, keyboardType = 'default', multiline = false, fieldName = null) => (
     <View style={styles.inputContainer}>
@@ -414,22 +358,34 @@ const AddMenuItemScreen = () => {
   const renderCategoryPicker = () => (
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>Category *</Text>
-      <TouchableOpacity
-        style={styles.pickerButton}
-        onPress={() => setShowCategoryPicker(true)}
-      >
-        <View style={styles.pickerButtonContent}>
-          <Text style={[styles.pickerButtonText, !formData.categoryId && styles.placeholderText]}>
-            {getSelectedCategoryName()}
-          </Text>
-          {formData.categoryId && (
-            <Text style={styles.pickerButtonSubtext}>
-              {categories.length} categories available
+      {categories.length > 0 ? (
+        <TouchableOpacity
+          style={styles.pickerButton}
+          onPress={() => setShowCategoryPicker(true)}
+        >
+          <View style={styles.pickerButtonContent}>
+            <Text style={[styles.pickerButtonText, !formData.categoryId && styles.placeholderText]}>
+              {getSelectedCategoryName()}
             </Text>
-          )}
+            {formData.categoryId && (
+              <Text style={styles.pickerButtonSubtext}>
+                {categories.length} categories available
+              </Text>
+            )}
+          </View>
+          <Text style={styles.pickerArrow}>▼</Text>
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.emptyCategoriesContainer}>
+          <Text style={styles.emptyCategoriesText}>No categories available</Text>
+          <TouchableOpacity
+            style={styles.addCategoryButton}
+            onPress={handleAddCategory}
+          >
+            <Text style={styles.addCategoryButtonText}>Add Category</Text>
+          </TouchableOpacity>
         </View>
-        <Text style={styles.pickerArrow}>▼</Text>
-      </TouchableOpacity>
+      )}
     </View>
   );
 
@@ -847,7 +803,7 @@ const AddMenuItemScreen = () => {
                 >
                   <Text style={styles.templateItemName}>{item.name}</Text>
                   <Text style={styles.templateItemDescription}>
-                    {item.data.name} - ${item.data.price}
+                    {item.data.name} - ₹{item.data.price}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -875,7 +831,7 @@ const AddMenuItemScreen = () => {
             <ScrollView style={styles.previewContent}>
               <View style={styles.previewCard}>
                 <Text style={styles.previewName}>{formData.name || 'Item Name'}</Text>
-                <Text style={styles.previewPrice}>${formatPrice(formData.price) || '0.00'}</Text>
+                <Text style={styles.previewPrice}>₹{formatPrice(formData.price) || '0.00'}</Text>
                 <Text style={styles.previewDescription}>{formData.description || 'No description provided'}</Text>
                 
                 {formData.servingSize && (
@@ -1378,6 +1334,31 @@ const styles = StyleSheet.create({
   dietaryTagText: {
     fontSize: 10,
     color: '#4CAF50',
+    fontWeight: '600',
+  },
+  emptyCategoriesContainer: {
+    padding: 16,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+    alignItems: 'center',
+  },
+  emptyCategoriesText: {
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  addCategoryButton: {
+    backgroundColor: '#FF6B35',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  addCategoryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
     fontWeight: '600',
   },
 });

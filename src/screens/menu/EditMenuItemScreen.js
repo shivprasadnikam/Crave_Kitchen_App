@@ -53,7 +53,11 @@ const EditMenuItemScreen = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const vendorId = user?.vendorProfileId || user?.id || 1;
+      const vendorId = user?.vendorId || user?.id || 1;
+      
+      if (!vendorId) {
+        throw new Error('Vendor ID not found. Please log in again.');
+      }
       
       // Load item and categories in parallel
       const [itemResponse, categoriesResponse] = await Promise.all([
@@ -130,7 +134,12 @@ const EditMenuItemScreen = () => {
     try {
       setSaving(true);
       
-      const vendorId = user?.vendorProfileId || user?.id || 1;
+      const vendorId = user?.vendorId || user?.id || 1;
+      
+      if (!vendorId) {
+        throw new Error('Vendor ID not found. Please log in again.');
+      }
+      
       const itemData = {
         ...formData,
         vendorId,

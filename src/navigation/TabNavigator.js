@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Import screens
 import VendorDashboardScreen from '../screens/dashboard/VendorDashboardScreen';
@@ -42,6 +43,8 @@ const TabIcon = ({ name, focused, color }) => {
 };
 
 const TabNavigator = () => {
+  const insets = useSafeAreaInsets();
+  
   return (
     <Tab.Navigator
       initialRouteName="Dashboard"
@@ -55,9 +58,9 @@ const TabNavigator = () => {
           backgroundColor: '#FFFFFF',
           borderTopWidth: 0.5,
           borderTopColor: '#F1F5F9',
-          paddingBottom: 4,
+          paddingBottom: Math.max(insets.bottom, 4),
           paddingTop: 4,
-          height: 60,
+          height: 60 + insets.bottom,
           shadowColor: '#000',
           shadowOffset: {
             width: 0,
@@ -66,6 +69,10 @@ const TabNavigator = () => {
           shadowOpacity: 0.05,
           shadowRadius: 2,
           elevation: 3,
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
         },
         tabBarLabelStyle: {
           fontSize: 9,

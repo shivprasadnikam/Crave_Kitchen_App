@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,28 +6,58 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ScrollView,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
+import { useAuth } from '../../context/AuthContext';
+import { orderService } from '../../services/orderService';
 
 const OrderDetailScreen = ({ navigation, route }) => {
+  const { user } = useAuth();
   const orderId = route.params?.orderId || '1';
   
-  // Sample order data
-  const order = {
-    id: orderId,
-    orderNumber: '#ORD-001',
-    customerName: 'John Doe',
-    customerPhone: '+1 (555) 123-4567',
-    customerAddress: '123 Main St, City, State 12345',
-    orderTime: '2024-01-15 14:30',
-    status: 'Preparing',
-    items: [
-      { name: 'Pizza Margherita', quantity: 2, price: 12.99, total: 25.98 },
-      { name: 'Coke', quantity: 1, price: 2.99, total: 2.99 },
-    ],
-    subtotal: 28.97,
-    tax: 2.32,
-    deliveryFee: 3.00,
-    total: 34.29,
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    loadOrderDetails();
+  }, [orderId]);
+
+  const loadOrderDetails = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const vendorId = user?.vendorId || user?.id || 1;
+      console.log(`[ORDER DETAIL] Loading order details for order: ${orderId}, vendor: ${vendorId}`);
+      
+      if (!vendorId) {
+        throw new Error('Vendor ID not found. Please log in again.');
+      }
+      
+      const orderData = await orderService.getOrderById(orderId, vendorId);
+      setOrder(orderData);
+      
+      console.log(`[ORDER DETAIL] Loaded order details:`, {
+        orderNumber: orderData.orderNumber,
+        status: orderData.status,
+        itemsCount: orderData.items?.length || 0
+      });
+    } catch (error) {
+      console.error('[ORDER DETAIL] Error loading order details:', error);
+      setError('Failed to load order details');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    console.log('[ORDER DETAIL] Pull-to-refresh triggered');
+    setRefreshing(true);
+    await loadOrderDetails();
+    setRefreshing(false);
   };
 
   const getStatusColor = (status) => {
@@ -45,9 +75,51 @@ const OrderDetailScreen = ({ navigation, route }) => {
     }
   };
 
+  if (loading && !refreshing) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF6B35" />
+          <Text style={styles.loadingText}>Loading order details...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error && !refreshing) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Error: {error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={loadOrderDetails}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!order) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Order not found</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={loadOrderDetails}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView 
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Order Details</Text>
@@ -137,6 +209,39 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666666',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#FF4444',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: '#FF6B35',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   header: {
     padding: 20,
