@@ -47,6 +47,9 @@ export const authService = {
         user: response.data.user,
         token: response.data.accessToken,
         refreshToken: response.data.refreshToken,
+        vendorId: response.data.vendorId,
+        vendorName: response.data.vendorName,
+        vendorEmail: response.data.vendorEmail,
       };
     } catch (error) {
       throw new Error(error.message || 'Login failed');

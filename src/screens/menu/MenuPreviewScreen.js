@@ -33,20 +33,54 @@ const MenuPreviewScreen = () => {
       setLoading(true);
       setError(null);
       
-      const vendorId = user?.vendorProfileId || user?.id || 1; // Fallback to 1 for testing
+      const vendorId = user?.vendorId || user?.id;
       
-      // Load menu overview and featured items in parallel
-      const [overviewResponse, featuredResponse] = await Promise.all([
-        menuOverviewService.getMenuOverview(vendorId),
-        menuOverviewService.getFeaturedItems(vendorId)
-      ]);
+      if (!vendorId) {
+        throw new Error('Vendor ID not found. Please log in again.');
+      }
+      
+      console.log(`[MENU PREVIEW] Loading menu preview data for vendor: ${vendorId}`);
+      
+      // Try to get both overview and featured items, but handle failures gracefully
+      let overviewData = null;
+      let featuredItems = [];
+
+      try {
+        const overviewResponse = await menuOverviewService.getMenuOverview(vendorId);
+        overviewData = overviewResponse.data;
+        console.log(`[MENU PREVIEW] Overview data retrieved successfully`);
+      } catch (overviewError) {
+        console.warn(`[MENU PREVIEW] Failed to get overview data:`, overviewError.message);
+        // Provide fallback overview data
+        overviewData = {
+          totalItems: 0,
+          availableItems: 0,
+          totalCategories: 0,
+          averagePrice: 0
+        };
+      }
+
+      try {
+        const featuredResponse = await menuOverviewService.getFeaturedItems(vendorId);
+        featuredItems = featuredResponse.data || [];
+        console.log(`[MENU PREVIEW] Featured items retrieved successfully: ${featuredItems.length} items`);
+      } catch (featuredError) {
+        console.warn(`[MENU PREVIEW] Failed to get featured items:`, featuredError.message);
+        // Provide empty featured items array as fallback
+        featuredItems = [];
+      }
 
       setMenuData({
-        overview: overviewResponse.data,
-        featuredItems: featuredResponse.data || []
+        overview: overviewData,
+        featuredItems: featuredItems
+      });
+      
+      console.log(`[MENU PREVIEW] Menu preview data loaded:`, {
+        overviewStats: overviewData ? Object.keys(overviewData).length : 0,
+        featuredItemsCount: featuredItems.length
       });
     } catch (error) {
-      console.error('Error loading menu preview data:', error);
+      console.error('[MENU PREVIEW] Error loading menu preview data:', error);
       setError('Failed to load menu preview data');
     } finally {
       setLoading(false);
@@ -71,11 +105,11 @@ const MenuPreviewScreen = () => {
         </View>
         <View style={styles.menuInfo}>
           <Text style={styles.menuName}>{item.name}</Text>
-          <Text style={styles.menuPrice}>${item.price}</Text>
+          <Text style={styles.menuPrice}>₹{item.price}</Text>
           {item.hasDiscount && (
-            <Text style={styles.discountText}>
-              Save ${(item.originalPrice - item.price).toFixed(2)}!
-            </Text>
+                          <Text style={styles.discountText}>
+                Save ₹{(item.originalPrice - item.price).toFixed(2)}!
+              </Text>
           )}
         </View>
       </View>
@@ -508,6 +542,24 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyStateText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#666666',
+    marginBottom: 8,
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: '#999999',
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
 });
 

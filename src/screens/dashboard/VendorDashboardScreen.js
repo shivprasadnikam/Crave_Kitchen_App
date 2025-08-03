@@ -1,51 +1,170 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   ScrollView,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../../context/AuthContext';
+import { menuService } from '../../services/menuService';
+import { orderService } from '../../services/orderService';
+import { analyticsService } from '../../services/analyticsService';
 
 const VendorDashboardScreen = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
+  const { user } = useAuth();
+  
+  const [dashboardStats, setDashboardStats] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
 
-  const dashboardStats = [
-    {
-      id: '1',
-      title: 'Today\'s Orders',
-      value: '12',
-      change: '+3',
-      icon: '📋',
-      color: '#4CAF50',
-    },
-    {
-      id: '2',
-      title: 'Revenue',
-      value: '$1,234',
-      change: '+15%',
-      icon: '💰',
-      color: '#FF6B35',
-    },
-    {
-      id: '3',
-      title: 'Active Items',
-      value: '45',
-      change: '+2',
-      icon: '🍽️',
-      color: '#2196F3',
-    },
-    {
-      id: '4',
-      title: 'Low Stock',
-      value: '3',
-      change: '-1',
-      icon: '⚠️',
-      color: '#FF9800',
-    },
-  ];
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const vendorId = user?.vendorId || user?.id || 1;
+      console.log(`[DASHBOARD] Loading dashboard data for vendor: ${vendorId}`);
+      
+      if (!vendorId) {
+        throw new Error('Vendor ID not found. Please log in again.');
+      }
+      
+      // Load data from multiple services
+      const [menuData, orderData, analyticsData] = await Promise.allSettled([
+        menuService.getMenuManagementData(vendorId),
+        orderService.getPendingOrders(vendorId),
+        analyticsService.getAnalyticsData(vendorId, 'today')
+      ]);
+
+      // Process menu data
+      let activeItems = 0;
+      let totalItems = 0;
+      if (menuData.status === 'fulfilled') {
+        const items = menuData.value.menuItems || [];
+        activeItems = items.filter(item => item.isAvailable).length;
+        totalItems = items.length;
+      }
+
+      // Process order data
+      let todayOrders = 0;
+      if (orderData.status === 'fulfilled') {
+        todayOrders = orderData.value.data?.content?.length || 0;
+      }
+
+      // Process analytics data
+      let todayRevenue = 0;
+      let revenueChange = '+0%';
+      if (analyticsData.status === 'fulfilled') {
+        todayRevenue = analyticsData.value.revenueOverview?.totalRevenue || 0;
+        revenueChange = analyticsData.value.revenueOverview?.revenueGrowth || '+0%';
+      }
+
+      // Create dashboard stats with real data
+      const stats = [
+        {
+          id: '1',
+          title: 'Today\'s Orders',
+          value: todayOrders.toString(),
+          change: '+0',
+          icon: '📋',
+          color: '#4CAF50',
+        },
+        {
+          id: '2',
+          title: 'Revenue',
+          value: `₹${todayRevenue.toFixed(2)}`,
+          change: revenueChange,
+          icon: '💰',
+          color: '#FF6B35',
+        },
+        {
+          id: '3',
+          title: 'Active Items',
+          value: activeItems.toString(),
+          change: `+${totalItems - activeItems}`,
+          icon: '🍽️',
+          color: '#2196F3',
+        },
+        {
+          id: '4',
+          title: 'Total Items',
+          value: totalItems.toString(),
+          change: '+0',
+          icon: '📦',
+          color: '#FF9800',
+        },
+      ];
+
+      setDashboardStats(stats);
+      
+      console.log(`[DASHBOARD] Dashboard data loaded:`, {
+        todayOrders,
+        todayRevenue,
+        activeItems,
+        totalItems
+      });
+    } catch (error) {
+      console.error('[DASHBOARD] Error loading dashboard data:', error);
+      setError('Failed to load dashboard data');
+      
+      // Set fallback data
+      setDashboardStats([
+        {
+          id: '1',
+          title: 'Today\'s Orders',
+          value: '0',
+          change: '+0',
+          icon: '📋',
+          color: '#4CAF50',
+        },
+        {
+          id: '2',
+          title: 'Revenue',
+          value: '₹0.00',
+          change: '+0%',
+          icon: '💰',
+          color: '#FF6B35',
+        },
+        {
+          id: '3',
+          title: 'Active Items',
+          value: '0',
+          change: '+0',
+          icon: '🍽️',
+          color: '#2196F3',
+        },
+        {
+          id: '4',
+          title: 'Total Items',
+          value: '0',
+          change: '+0',
+          icon: '📦',
+          color: '#FF9800',
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    console.log('[DASHBOARD] Pull-to-refresh triggered');
+    setRefreshing(true);
+    await loadDashboardData();
+    setRefreshing(false);
+  };
 
   const quickActions = [
     {
@@ -98,13 +217,44 @@ const VendorDashboardScreen = () => {
     </TouchableOpacity>
   );
 
+  if (loading && !refreshing) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF6B35" />
+          <Text style={styles.loadingText}>Loading dashboard...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error && !refreshing) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Error: {error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={loadDashboardData}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Dashboard</Text>
-          <Text style={styles.headerSubtitle}>Welcome back! Here's your overview</Text>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={{ paddingBottom: 40 + insets.bottom }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {/* Welcome Section */}
+        <View style={styles.welcomeSection}>
+          <Text style={styles.welcomeTitle}>Welcome back!</Text>
+          <Text style={styles.welcomeSubtitle}>Here's your overview for today</Text>
         </View>
 
         {/* Stats Grid */}
@@ -115,41 +265,13 @@ const VendorDashboardScreen = () => {
           </View>
         </View>
 
-        {/* Quick Actions */}
-        <View style={styles.quickActionsSection}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-          <View style={styles.quickActionsGrid}>
-            {quickActions.map(renderQuickAction)}
-          </View>
-        </View>
-
-        {/* Recent Orders */}
-        <View style={styles.recentOrdersSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Orders</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('OrderList')}>
-              <Text style={styles.viewAllText}>View All</Text>
-            </TouchableOpacity>
-          </View>
-          
-          <View style={styles.orderCard}>
-            <View style={styles.orderHeader}>
-              <Text style={styles.orderNumber}>#ORD-001</Text>
-              <Text style={styles.orderStatus}>Preparing</Text>
-            </View>
-            <Text style={styles.orderItems}>Pizza Margherita, Coke</Text>
-            <Text style={styles.orderTime}>2 minutes ago</Text>
-          </View>
-          
-          <View style={styles.orderCard}>
-            <View style={styles.orderHeader}>
-              <Text style={styles.orderNumber}>#ORD-002</Text>
-              <Text style={styles.orderStatus}>Ready</Text>
-            </View>
-            <Text style={styles.orderItems}>Chicken Burger, Fries</Text>
-            <Text style={styles.orderTime}>15 minutes ago</Text>
-          </View>
-        </View>
+                 {/* Quick Actions */}
+         <View style={styles.quickActionsSection}>
+           <Text style={styles.sectionTitle}>Quick Actions</Text>
+           <View style={styles.quickActionsGrid}>
+             {quickActions.map(renderQuickAction)}
+           </View>
+         </View>        
       </ScrollView>
     </SafeAreaView>
   );
@@ -158,41 +280,73 @@ const VendorDashboardScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F8FAFC',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666666',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#FF4444',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: '#FF6B35',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   scrollView: {
     flex: 1,
+    paddingHorizontal: 16,
   },
-  header: {
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-    alignItems: 'center',
+  welcomeSection: {
+    paddingVertical: 32,
+    paddingHorizontal: 0,
+    alignItems: 'flex-start',
   },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#212121',
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1F2937',
     marginBottom: 4,
   },
-  headerSubtitle: {
+  welcomeSubtitle: {
     fontSize: 16,
     color: '#757575',
   },
   statsSection: {
-    margin: 16,
+    marginBottom: 20,
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 20,
-    elevation: 2,
+    elevation: 1,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 1,
     },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -243,18 +397,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   quickActionsSection: {
-    margin: 16,
+    marginBottom: 0,
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 20,
-    elevation: 2,
+    elevation: 1,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 1,
     },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
   },
   quickActionsGrid: {
     flexDirection: 'row',
@@ -288,68 +442,10 @@ const styles = StyleSheet.create({
     color: '#212121',
     textAlign: 'center',
   },
-  recentOrdersSection: {
-    margin: 16,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
     color: '#212121',
-  },
-  viewAllText: {
-    fontSize: 14,
-    color: '#FF6B35',
-    fontWeight: '500',
-  },
-  orderCard: {
-    backgroundColor: '#F9F9F9',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  orderHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  orderNumber: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#212121',
-  },
-  orderStatus: {
-    fontSize: 14,
-    color: '#4CAF50',
-    fontWeight: '600',
-  },
-  orderItems: {
-    fontSize: 14,
-    color: '#757575',
-    marginBottom: 8,
-  },
-  orderTime: {
-    fontSize: 12,
-    color: '#757575',
   },
 });
 

@@ -3,11 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import { Button, Card, Footer } from '../components/ui';
+import { colors, typography, spacing, commonStyles } from '../theme/theme';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -18,69 +20,89 @@ const HomeScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View style={styles.header}>
+        <LinearGradient
+          colors={[colors.primary[600], colors.primary[500]]}
+          style={styles.header}
+        >
           <Text style={styles.headerTitle}>Crave Kitchen</Text>
           <Text style={styles.headerSubtitle}>
             Restaurant Management Made Simple
           </Text>
-        </View>
+        </LinearGradient>
 
         {/* Hero Section */}
-        <View style={styles.heroSection}>
+        <Card variant="elevated" style={styles.heroCard}>
           <Text style={styles.heroTitle}>Welcome to Crave Kitchen</Text>
           <Text style={styles.heroSubtitle}>
             Manage your restaurant operations with ease. From menu management to order processing, 
             we've got everything you need to run your business efficiently.
           </Text>
-        </View>
+        </Card>
 
         {/* Features */}
         <View style={styles.featuresSection}>
           <Text style={styles.sectionTitle}>Key Features</Text>
           
-          <View style={styles.featureCard}>
-            <Text style={styles.featureIcon}>🍽️</Text>
-            <Text style={styles.featureTitle}>Menu Management</Text>
-            <Text style={styles.featureDescription}>
-              Create, edit, and organize your menu items with ease
-            </Text>
-          </View>
+          <Card variant="default" style={styles.featureCard}>
+            <View style={styles.featureContent}>
+              <Text style={styles.featureIcon}>🍽️</Text>
+              <View style={styles.featureText}>
+                <Text style={styles.featureTitle}>Menu Management</Text>
+                <Text style={styles.featureDescription}>
+                  Create, edit, and organize your menu items with ease
+                </Text>
+              </View>
+            </View>
+          </Card>
 
-          <View style={styles.featureCard}>
-            <Text style={styles.featureIcon}>📋</Text>
-            <Text style={styles.featureTitle}>Order Processing</Text>
-            <Text style={styles.featureDescription}>
-              Handle incoming orders and track their status in real-time
-            </Text>
-          </View>
+          <Card variant="default" style={styles.featureCard}>
+            <View style={styles.featureContent}>
+              <Text style={styles.featureIcon}>📋</Text>
+              <View style={styles.featureText}>
+                <Text style={styles.featureTitle}>Order Processing</Text>
+                <Text style={styles.featureDescription}>
+                  Handle incoming orders and track their status in real-time
+                </Text>
+              </View>
+            </View>
+          </Card>
 
-          <View style={styles.featureCard}>
-            <Text style={styles.featureIcon}>📊</Text>
-            <Text style={styles.featureTitle}>Analytics</Text>
-            <Text style={styles.featureDescription}>
-              Get insights into your business performance and trends
-            </Text>
-          </View>
+          <Card variant="default" style={styles.featureCard}>
+            <View style={styles.featureContent}>
+              <Text style={styles.featureIcon}>📊</Text>
+              <View style={styles.featureText}>
+                <Text style={styles.featureTitle}>Analytics</Text>
+                <Text style={styles.featureDescription}>
+                  Get insights into your business performance and trends
+                </Text>
+              </View>
+            </View>
+          </Card>
 
-          <View style={styles.featureCard}>
-            <Text style={styles.featureIcon}>📦</Text>
-            <Text style={styles.featureTitle}>Inventory Management</Text>
-            <Text style={styles.featureDescription}>
-              Track stock levels and manage your ingredients efficiently
-            </Text>
-          </View>
+          <Card variant="default" style={styles.featureCard}>
+            <View style={styles.featureContent}>
+              <Text style={styles.featureIcon}>📦</Text>
+              <View style={styles.featureText}>
+                <Text style={styles.featureTitle}>Inventory Management</Text>
+                <Text style={styles.featureDescription}>
+                  Track stock levels and manage your ingredients efficiently
+                </Text>
+              </View>
+            </View>
+          </Card>
         </View>
 
         {/* CTA Section */}
         <View style={styles.ctaSection}>
-          <TouchableOpacity 
-            style={styles.ctaButton}
+          <Button
+            title="Get Started"
             onPress={handleGetStarted}
-          >
-            <Text style={styles.ctaButtonText}>Get Started</Text>
-          </TouchableOpacity>
+            variant="primary"
+            size="large"
+            style={styles.ctaButton}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -90,98 +112,92 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#FAFAFA',
   },
+
   scrollView: {
     flex: 1,
   },
   header: {
-    backgroundColor: '#FF6B35',
-    padding: 20,
+    padding: 32,
     alignItems: 'center',
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 30,
+    fontWeight: '700',
     color: '#FFFFFF',
     marginBottom: 8,
+    textAlign: 'center',
   },
   headerSubtitle: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#FFFFFF',
     opacity: 0.9,
+    textAlign: 'center',
   },
-  heroSection: {
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    marginBottom: 20,
+  heroCard: {
+    margin: 20,
+    marginTop: -16,
     alignItems: 'center',
   },
   heroTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#212121',
-    marginBottom: 10,
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#171717',
+    marginBottom: 12,
     textAlign: 'center',
   },
   heroSubtitle: {
     fontSize: 16,
-    color: '#555',
+    color: '#525252',
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 24,
   },
   featuresSection: {
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    marginBottom: 20,
+    paddingHorizontal: 20,
+    marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#212121',
+    color: '#171717',
     marginBottom: 16,
   },
   featureCard: {
-    backgroundColor: '#F0F0F0',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 15,
+    marginBottom: 12,
+  },
+  featureContent: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   featureIcon: {
-    fontSize: 30,
-    marginRight: 15,
+    fontSize: 32,
+    marginRight: 16,
+    marginTop: 4,
+  },
+  featureText: {
+    flex: 1,
   },
   featureTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#212121',
-    marginBottom: 5,
+    fontWeight: '600',
+    color: '#171717',
+    marginBottom: 4,
   },
   featureDescription: {
     fontSize: 14,
-    color: '#555',
+    color: '#525252',
+    lineHeight: 21,
   },
   ctaSection: {
-    padding: 20,
-    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 32,
+    marginBottom: 20,
   },
   ctaButton: {
-    backgroundColor: '#4A90E2',
-    borderRadius: 10,
-    paddingVertical: 15,
-    paddingHorizontal: 30,
     width: '100%',
-    alignItems: 'center',
-  },
-  ctaButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
   },
 });
 

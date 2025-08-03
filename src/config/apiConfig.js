@@ -12,7 +12,7 @@ const CURRENT_ENV = ENV.DEVELOPMENT;
 
 const API_CONFIGS = {
   [ENV.DEVELOPMENT]: {
-    BASE_URL: 'http://192.168.1.4:9090', // Use your computer's IP address
+    BASE_URL: 'http://192.168.1.3:9090', 
     TIMEOUT: 10000,
     RETRY_ATTEMPTS: 3,
   },
@@ -73,6 +73,12 @@ const ENDPOINTS = {
     OVERVIEW: '/api/menu/overview',
     FEATURED: '/api/menu/featured',
     DIETARY_PREFERENCES: '/api/menu/dietary-preferences',
+    
+    // Menu Analytics
+    ANALYTICS: '/api/menu/analytics',
+    TOP_PERFORMING_ITEMS: '/api/menu/analytics/top-performing',
+    LOW_PERFORMING_ITEMS: '/api/menu/analytics/low-performing',
+    CATEGORY_PERFORMANCE: '/api/menu/analytics/category-performance',
   },
   
   // Orders
@@ -89,6 +95,11 @@ const ENDPOINTS = {
     REVENUE: '/api/analytics/revenue',
     ORDERS: '/api/analytics/orders',
     POPULAR_ITEMS: '/api/analytics/popular-items',
+    REVENUE_OVERVIEW: '/api/analytics/revenue/overview',
+    REVENUE_TRENDS: '/api/analytics/revenue/trends',
+    TOP_PERFORMING_ITEMS: '/api/analytics/revenue/top-items',
+    ORDER_ANALYTICS: '/api/analytics/orders/analytics',
+    ORDER_TRENDS: '/api/analytics/orders/trends',
   },
   
   // Inventory

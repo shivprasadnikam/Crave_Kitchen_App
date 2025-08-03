@@ -1,25 +1,11 @@
 import { apiConfig } from '../config/apiConfig';
 import { authService } from './authService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Logging utility
 const logApiCall = (method, endpoint, params = null, response = null, error = null) => {
-  const timestamp = new Date().toISOString();
-  const logData = {
-    timestamp,
-    method,
-    endpoint,
-    params,
-    response: response ? { success: response.success, message: response.message } : null,
-    error: error ? { message: error.message, stack: error.stack } : null,
-  };
-  
-  console.log(`[MENU API] ${method} ${endpoint}:`, JSON.stringify(logData, null, 2));
-  
-  // Log to a more detailed format for debugging
   if (error) {
     console.error(`[MENU API ERROR] ${method} ${endpoint}:`, error);
-  } else if (response) {
-    console.log(`[MENU API SUCCESS] ${method} ${endpoint}:`, response.message);
   }
 };
 
@@ -29,26 +15,14 @@ const apiCall = async (endpoint, options = {}) => {
   const startTime = Date.now();
   
   try {
-    console.log(`[MENU API] Starting ${method} request to: ${endpoint}`);
-    
     const token = await authService.getAuthToken();
     const url = apiConfig.getFullUrl(endpoint);
     
-    console.log(`[MENU API] Full URL: ${url}`);
-    console.log(`[MENU API] Token available: ${token ? 'Yes' : 'No'}`);
-    console.log(`[MENU API] Headers:`, apiConfig.getAuthHeaders(token));
-    
     const config = {
-      method: 'GET',
+      method: options.method || 'GET',
       headers: apiConfig.getAuthHeaders(token),
       ...options,
     };
-
-    console.log(`[MENU API] Request config:`, {
-      method: config.method,
-      headers: config.headers,
-      body: config.body ? 'Present' : 'None'
-    });
 
     // Add timeout to the fetch request
     const controller = new AbortController();
@@ -61,16 +35,40 @@ const apiCall = async (endpoint, options = {}) => {
     
     clearTimeout(timeoutId);
     const data = await response.json();
-    const duration = Date.now() - startTime;
-
-    console.log(`[MENU API] Response received in ${duration}ms:`, {
-      status: response.status,
-      statusText: response.statusText,
-      success: data.success,
-      message: data.message
-    });
 
     if (!response.ok) {
+      // Handle 401 Unauthorized - try to refresh token
+      if (response.status === 401) {
+        try {
+          const refreshToken = await AsyncStorage.getItem('refresh_token');
+          if (refreshToken) {
+            const refreshResponse = await authService.refreshToken(refreshToken);
+            if (refreshResponse.token) {
+              // Store new tokens
+              await AsyncStorage.setItem('auth_token', refreshResponse.token);
+              await AsyncStorage.setItem('refresh_token', refreshResponse.refreshToken);
+              
+              // Retry the original request with new token
+              const newToken = refreshResponse.token;
+              const retryConfig = {
+                ...config,
+                headers: apiConfig.getAuthHeaders(newToken),
+              };
+              
+              const retryResponse = await fetch(url, retryConfig);
+              const retryData = await retryResponse.json();
+              
+              if (retryResponse.ok) {
+                return retryData;
+              }
+            }
+          }
+        } catch (refreshError) {
+          console.error(`[MENU API] Token refresh failed:`, refreshError);
+          // Continue to throw the original error
+        }
+      }
+      
       const error = new Error(data.message || 'API request failed');
       logApiCall(method, endpoint, null, null, error);
       throw error;
@@ -83,23 +81,9 @@ const apiCall = async (endpoint, options = {}) => {
     
     // Enhanced error logging
     if (error.name === 'AbortError') {
-      console.error(`[MENU API] Request timed out after ${duration}ms`);
-      console.error(`[MENU API] Timeout error for: ${endpoint}`);
+      console.error(`[MENU API] Request timed out for: ${endpoint}`);
     } else if (error.message.includes('Network request failed')) {
-      console.error(`[MENU API] Network error after ${duration}ms`);
-      console.error(`[MENU API] Network error details:`, {
-        endpoint,
-        url: apiConfig.getFullUrl(endpoint),
-        error: error.message,
-        stack: error.stack
-      });
-      console.error(`[MENU API] Possible causes:`);
-      console.error(`[MENU API] 1. Backend server not running on port 9090`);
-      console.error(`[MENU API] 2. Wrong IP address in apiConfig.js`);
-      console.error(`[MENU API] 3. Firewall blocking the connection`);
-      console.error(`[MENU API] 4. Network connectivity issues`);
-    } else {
-      console.error(`[MENU API] Request failed after ${duration}ms:`, error);
+      console.error(`[MENU API] Network error for: ${endpoint}`);
     }
     
     logApiCall(method, endpoint, null, null, error);
@@ -107,49 +91,7 @@ const apiCall = async (endpoint, options = {}) => {
   }
 };
 
-// Network connectivity test
-export const testNetworkConnection = async () => {
-  console.log(`[NETWORK TEST] Testing connection to backend...`);
-  
-  try {
-    const baseUrl = apiConfig.getCurrentConfig().BASE_URL;
-    console.log(`[NETWORK TEST] Base URL: ${baseUrl}`);
-    
-    // Test basic connectivity
-    const testUrl = `${baseUrl}/api/health`;
-    console.log(`[NETWORK TEST] Testing health endpoint: ${testUrl}`);
-    
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-    
-    const response = await fetch(testUrl, {
-      method: 'GET',
-      signal: controller.signal
-    });
-    
-    clearTimeout(timeoutId);
-    console.log(`[NETWORK TEST] Health check response: ${response.status}`);
-    
-    if (response.ok) {
-      console.log(`[NETWORK TEST] ✅ Connection successful!`);
-      return true;
-    } else {
-      console.log(`[NETWORK TEST] ⚠️ Server responded but with error: ${response.status}`);
-      return false;
-    }
-  } catch (error) {
-    console.error(`[NETWORK TEST] ❌ Connection failed:`, error.message);
-    console.error(`[NETWORK TEST] Error type: ${error.name}`);
-    
-    if (error.name === 'AbortError') {
-      console.error(`[NETWORK TEST] Timeout - server not responding`);
-    } else if (error.message.includes('Network request failed')) {
-      console.error(`[NETWORK TEST] Network error - check server and IP address`);
-    }
-    
-    return false;
-  }
-};
+
 
 // Helper function to build query parameters
 const buildQueryParams = (params = {}) => {
@@ -159,9 +101,7 @@ const buildQueryParams = (params = {}) => {
       queryParams.append(key, value);
     }
   });
-  const queryString = queryParams.toString();
-  console.log(`[MENU API] Query params: ${queryString}`);
-  return queryString;
+  return queryParams.toString();
 };
 
 // =====================================================
@@ -171,16 +111,12 @@ const buildQueryParams = (params = {}) => {
 export const menuCategoriesService = {
   // Get all categories
   getAllCategories: async (vendorId, filters = {}) => {
-    console.log(`[MENU CATEGORIES] Getting all categories for vendor: ${vendorId}`);
-    console.log(`[MENU CATEGORIES] Filters:`, filters);
-    
     const params = { vendorId, ...filters };
     const queryString = buildQueryParams(params);
     const endpoint = `${apiConfig.ENDPOINTS.MENU.CATEGORIES}?${queryString}`;
     
     try {
       const response = await apiCall(endpoint);
-      console.log(`[MENU CATEGORIES] Retrieved ${response.data?.content?.length || 0} categories`);
       return response;
     } catch (error) {
       console.error(`[MENU CATEGORIES] Failed to get categories:`, error);
@@ -190,13 +126,10 @@ export const menuCategoriesService = {
 
   // Get category by ID
   getCategoryById: async (categoryId) => {
-    console.log(`[MENU CATEGORIES] Getting category by ID: ${categoryId}`);
-    
     const endpoint = apiConfig.ENDPOINTS.MENU.CATEGORY_BY_ID(categoryId);
     
     try {
       const response = await apiCall(endpoint);
-      console.log(`[MENU CATEGORIES] Retrieved category:`, response.data?.name);
       return response;
     } catch (error) {
       console.error(`[MENU CATEGORIES] Failed to get category ${categoryId}:`, error);
@@ -206,8 +139,6 @@ export const menuCategoriesService = {
 
   // Create new category
   createCategory: async (categoryData) => {
-    console.log(`[MENU CATEGORIES] Creating new category:`, categoryData);
-    
     const endpoint = apiConfig.ENDPOINTS.MENU.CATEGORIES;
     
     try {
@@ -215,7 +146,6 @@ export const menuCategoriesService = {
         method: 'POST',
         body: JSON.stringify(categoryData),
       });
-      console.log(`[MENU CATEGORIES] Category created successfully:`, response.data?.name);
       return response;
     } catch (error) {
       console.error(`[MENU CATEGORIES] Failed to create category:`, error);
@@ -225,8 +155,6 @@ export const menuCategoriesService = {
 
   // Update category
   updateCategory: async (categoryId, categoryData) => {
-    console.log(`[MENU CATEGORIES] Updating category ${categoryId}:`, categoryData);
-    
     const endpoint = apiConfig.ENDPOINTS.MENU.CATEGORY_BY_ID(categoryId);
     
     try {
@@ -234,7 +162,6 @@ export const menuCategoriesService = {
         method: 'PUT',
         body: JSON.stringify(categoryData),
       });
-      console.log(`[MENU CATEGORIES] Category updated successfully:`, response.data?.name);
       return response;
     } catch (error) {
       console.error(`[MENU CATEGORIES] Failed to update category ${categoryId}:`, error);
@@ -244,15 +171,12 @@ export const menuCategoriesService = {
 
   // Delete category
   deleteCategory: async (categoryId) => {
-    console.log(`[MENU CATEGORIES] Deleting category: ${categoryId}`);
-    
     const endpoint = apiConfig.ENDPOINTS.MENU.CATEGORY_BY_ID(categoryId);
     
     try {
       const response = await apiCall(endpoint, {
         method: 'DELETE',
       });
-      console.log(`[MENU CATEGORIES] Category deleted successfully: ${categoryId}`);
       return response;
     } catch (error) {
       console.error(`[MENU CATEGORIES] Failed to delete category ${categoryId}:`, error);
@@ -268,16 +192,12 @@ export const menuCategoriesService = {
 export const menuItemsService = {
   // Get all menu items
   getAllItems: async (vendorId, filters = {}) => {
-    console.log(`[MENU ITEMS] Getting all items for vendor: ${vendorId}`);
-    console.log(`[MENU ITEMS] Filters:`, filters);
-    
     const params = { vendorId, ...filters };
     const queryString = buildQueryParams(params);
     const endpoint = `${apiConfig.ENDPOINTS.MENU.ITEMS}?${queryString}`;
     
     try {
       const response = await apiCall(endpoint);
-      console.log(`[MENU ITEMS] Retrieved ${response.data?.content?.length || 0} items`);
       return response;
     } catch (error) {
       console.error(`[MENU ITEMS] Failed to get items:`, error);
@@ -287,13 +207,10 @@ export const menuItemsService = {
 
   // Get menu item by ID
   getItemById: async (itemId) => {
-    console.log(`[MENU ITEMS] Getting item by ID: ${itemId}`);
-    
     const endpoint = apiConfig.ENDPOINTS.MENU.ITEM_BY_ID(itemId);
     
     try {
       const response = await apiCall(endpoint);
-      console.log(`[MENU ITEMS] Retrieved item:`, response.data?.name);
       return response;
     } catch (error) {
       console.error(`[MENU ITEMS] Failed to get item ${itemId}:`, error);
@@ -303,13 +220,6 @@ export const menuItemsService = {
 
   // Create menu item
   createItem: async (itemData) => {
-    console.log(`[MENU ITEMS] Creating new item:`, {
-      name: itemData.name,
-      categoryId: itemData.categoryId,
-      price: itemData.price,
-      vendorId: itemData.vendorId
-    });
-    
     const endpoint = apiConfig.ENDPOINTS.MENU.ITEMS;
     
     try {
@@ -317,7 +227,6 @@ export const menuItemsService = {
         method: 'POST',
         body: JSON.stringify(itemData),
       });
-      console.log(`[MENU ITEMS] Item created successfully:`, response.data?.name);
       return response;
     } catch (error) {
       console.error(`[MENU ITEMS] Failed to create item:`, error);
@@ -526,6 +435,80 @@ export const menuItemAvailabilityService = {
 // MENU OVERVIEW & ANALYTICS
 // =====================================================
 
+export const menuAnalyticsService = {
+  // Get menu analytics
+  getMenuAnalytics: async (vendorId) => {
+    console.log(`[MENU ANALYTICS] Getting menu analytics for vendor: ${vendorId}`);
+    
+    const params = { vendorId };
+    const queryString = buildQueryParams(params);
+    const endpoint = `${apiConfig.ENDPOINTS.MENU.ANALYTICS}?${queryString}`;
+    
+    try {
+      const response = await apiCall(endpoint);
+      console.log(`[MENU ANALYTICS] Retrieved menu analytics for vendor ${vendorId}`);
+      return response;
+    } catch (error) {
+      console.error(`[MENU ANALYTICS] Failed to get menu analytics for vendor ${vendorId}:`, error);
+      throw error;
+    }
+  },
+
+  // Get top performing items
+  getTopPerformingItems: async (vendorId, limit = 10) => {
+    console.log(`[MENU ANALYTICS] Getting top performing items for vendor: ${vendorId}, limit: ${limit}`);
+    
+    const params = { vendorId, limit };
+    const queryString = buildQueryParams(params);
+    const endpoint = `${apiConfig.ENDPOINTS.MENU.TOP_PERFORMING_ITEMS}?${queryString}`;
+    
+    try {
+      const response = await apiCall(endpoint);
+      console.log(`[MENU ANALYTICS] Retrieved ${response.data?.length || 0} top performing items for vendor ${vendorId}`);
+      return response;
+    } catch (error) {
+      console.error(`[MENU ANALYTICS] Failed to get top performing items for vendor ${vendorId}:`, error);
+      throw error;
+    }
+  },
+
+  // Get low performing items
+  getLowPerformingItems: async (vendorId, limit = 10) => {
+    console.log(`[MENU ANALYTICS] Getting low performing items for vendor: ${vendorId}, limit: ${limit}`);
+    
+    const params = { vendorId, limit };
+    const queryString = buildQueryParams(params);
+    const endpoint = `${apiConfig.ENDPOINTS.MENU.LOW_PERFORMING_ITEMS}?${queryString}`;
+    
+    try {
+      const response = await apiCall(endpoint);
+      console.log(`[MENU ANALYTICS] Retrieved ${response.data?.length || 0} low performing items for vendor ${vendorId}`);
+      return response;
+    } catch (error) {
+      console.error(`[MENU ANALYTICS] Failed to get low performing items for vendor ${vendorId}:`, error);
+      throw error;
+    }
+  },
+
+  // Get category performance
+  getCategoryPerformance: async (vendorId) => {
+    console.log(`[MENU ANALYTICS] Getting category performance for vendor: ${vendorId}`);
+    
+    const params = { vendorId };
+    const queryString = buildQueryParams(params);
+    const endpoint = `${apiConfig.ENDPOINTS.MENU.CATEGORY_PERFORMANCE}?${queryString}`;
+    
+    try {
+      const response = await apiCall(endpoint);
+      console.log(`[MENU ANALYTICS] Retrieved category performance for vendor ${vendorId}`);
+      return response;
+    } catch (error) {
+      console.error(`[MENU ANALYTICS] Failed to get category performance for vendor ${vendorId}:`, error);
+      throw error;
+    }
+  },
+};
+
 export const menuOverviewService = {
   // Get menu overview
   getMenuOverview: async (vendorId) => {
@@ -619,14 +602,38 @@ export const menuService = {
     console.log(`[MENU SERVICE] Getting menu preview data for vendor: ${vendorId}`);
     
     try {
-      const [overviewResponse, featuredResponse] = await Promise.all([
-        menuOverviewService.getMenuOverview(vendorId),
-        menuOverviewService.getFeaturedItems(vendorId)
-      ]);
+      // Try to get both overview and featured items, but handle failures gracefully
+      let overviewData = null;
+      let featuredItems = [];
+
+      try {
+        const overviewResponse = await menuOverviewService.getMenuOverview(vendorId);
+        overviewData = overviewResponse.data;
+        console.log(`[MENU SERVICE] Overview data retrieved successfully`);
+      } catch (overviewError) {
+        console.warn(`[MENU SERVICE] Failed to get overview data:`, overviewError.message);
+        // Provide fallback overview data
+        overviewData = {
+          totalItems: 0,
+          availableItems: 0,
+          totalCategories: 0,
+          averagePrice: 0
+        };
+      }
+
+      try {
+        const featuredResponse = await menuOverviewService.getFeaturedItems(vendorId);
+        featuredItems = featuredResponse.data || [];
+        console.log(`[MENU SERVICE] Featured items retrieved successfully: ${featuredItems.length} items`);
+      } catch (featuredError) {
+        console.warn(`[MENU SERVICE] Failed to get featured items:`, featuredError.message);
+        // Provide empty featured items array as fallback
+        featuredItems = [];
+      }
 
       const result = {
-        overview: overviewResponse.data,
-        featuredItems: featuredResponse.data || []
+        overview: overviewData,
+        featuredItems: featuredItems
       };
 
       console.log(`[MENU SERVICE] Menu preview data retrieved:`, {
@@ -637,6 +644,47 @@ export const menuService = {
       return result;
     } catch (error) {
       console.error(`[MENU SERVICE] Failed to get menu preview data for vendor ${vendorId}:`, error);
+      // Return fallback data instead of throwing
+      return {
+        overview: {
+          totalItems: 0,
+          availableItems: 0,
+          totalCategories: 0,
+          averagePrice: 0
+        },
+        featuredItems: []
+      };
+    }
+  },
+
+  // Get menu analytics data
+  getMenuAnalyticsData: async (vendorId) => {
+    console.log(`[MENU SERVICE] Getting menu analytics data for vendor: ${vendorId}`);
+    
+    try {
+      const [analyticsResponse, topItemsResponse, lowItemsResponse, categoryResponse] = await Promise.all([
+        menuAnalyticsService.getMenuAnalytics(vendorId),
+        menuAnalyticsService.getTopPerformingItems(vendorId, 5),
+        menuAnalyticsService.getLowPerformingItems(vendorId, 5),
+        menuAnalyticsService.getCategoryPerformance(vendorId)
+      ]);
+
+      const result = {
+        ...analyticsResponse.data,
+        topPerformingItems: topItemsResponse.data || [],
+        lowPerformingItems: lowItemsResponse.data || [],
+        categoryPerformance: categoryResponse.data || []
+      };
+
+      console.log(`[MENU SERVICE] Menu analytics data retrieved:`, {
+        topItemsCount: result.topPerformingItems.length,
+        lowItemsCount: result.lowPerformingItems.length,
+        categoryCount: result.categoryPerformance.length
+      });
+
+      return result;
+    } catch (error) {
+      console.error(`[MENU SERVICE] Failed to get menu analytics data for vendor ${vendorId}:`, error);
       throw error;
     }
   },

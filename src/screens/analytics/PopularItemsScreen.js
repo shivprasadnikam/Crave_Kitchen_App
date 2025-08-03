@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,65 +7,88 @@ import {
   SafeAreaView,
   ScrollView,
   FlatList,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
+import { useAuth } from '../../context/AuthContext';
+import { analyticsService } from '../../services/analyticsService';
 
 const PopularItemsScreen = ({ navigation }) => {
-  const popularItems = [
-    {
-      id: '1',
-      name: 'Pizza Margherita',
-      image: '🍕',
-      orders: 45,
-      revenue: '$1,125.00',
-      rating: 4.8,
-      category: 'Pizza',
-    },
-    {
-      id: '2',
-      name: 'Chicken Burger',
-      image: '🍔',
-      orders: 38,
-      revenue: '$950.00',
-      rating: 4.6,
-      category: 'Burgers',
-    },
-    {
-      id: '3',
-      name: 'Pasta Carbonara',
-      image: '🍝',
-      orders: 32,
-      revenue: '$800.00',
-      rating: 4.7,
-      category: 'Pasta',
-    },
-    {
-      id: '4',
-      name: 'Caesar Salad',
-      image: '🥗',
-      orders: 28,
-      revenue: '$560.00',
-      rating: 4.5,
-      category: 'Salads',
-    },
-    {
-      id: '5',
-      name: 'Chocolate Cake',
-      image: '🍰',
-      orders: 25,
-      revenue: '$375.00',
-      rating: 4.9,
-      category: 'Desserts',
-    },
-    {
-      id: '6',
-      name: 'Coca Cola',
-      image: '🥤',
-      orders: 42,
-      revenue: '$210.00',
-      rating: 4.3,
-      category: 'Beverages',
-    },
-  ];
+  const { user } = useAuth();
+  
+  const [popularItems, setPopularItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    loadPopularItems();
+  }, []);
+
+  const loadPopularItems = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const vendorId = user?.vendorId || user?.id || 1;
+      console.log(`[POPULAR ITEMS] Loading popular items for vendor: ${vendorId}`);
+      
+      if (!vendorId) {
+        throw new Error('Vendor ID not found. Please log in again.');
+      }
+      
+      const analyticsData = await analyticsService.getAnalyticsData(vendorId, 'month');
+      const items = analyticsData.topPerformingItems || [];
+      
+      if (items.length === 0) {
+        console.log(`[POPULAR ITEMS] No popular items found, showing empty state`);
+        setPopularItems([]);
+        return;
+      }
+      
+      // Transform API data to match UI requirements
+      const transformedItems = items.map(item => ({
+        id: item.id?.toString() || Math.random().toString(),
+        name: item.name || 'Unknown Item',
+        image: getItemEmoji(item.name || ''),
+        orders: item.orders || 0,
+        revenue: `₹${(item.revenue || 0).toFixed(2)}`,
+        rating: item.rating || 0,
+        category: item.categoryName || 'Unknown',
+      }));
+      
+      setPopularItems(transformedItems);
+      
+      console.log(`[POPULAR ITEMS] Loaded ${transformedItems.length} popular items`);
+    } catch (error) {
+      console.error('[POPULAR ITEMS] Error loading popular items:', error);
+      setError('Failed to load popular items');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    console.log('[POPULAR ITEMS] Pull-to-refresh triggered');
+    setRefreshing(true);
+    await loadPopularItems();
+    setRefreshing(false);
+  };
+
+  const getItemEmoji = (itemName) => {
+    const name = itemName.toLowerCase();
+    if (name.includes('pizza')) return '🍕';
+    if (name.includes('burger')) return '🍔';
+    if (name.includes('pasta')) return '🍝';
+    if (name.includes('salad')) return '🥗';
+    if (name.includes('cake') || name.includes('dessert')) return '🍰';
+    if (name.includes('drink') || name.includes('cola') || name.includes('beverage')) return '🥤';
+    if (name.includes('chicken')) return '🍗';
+    if (name.includes('fish')) return '🐟';
+    if (name.includes('rice')) return '🍚';
+    if (name.includes('noodle')) return '🍜';
+    return '🍽️'; // Default food emoji
+  };
 
   const renderPopularItem = ({ item, index }) => (
     <View style={styles.itemCard}>
@@ -105,9 +128,38 @@ const PopularItemsScreen = ({ navigation }) => {
     </View>
   );
 
+  if (loading && !refreshing) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF6B35" />
+          <Text style={styles.loadingText}>Loading popular items...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error && !refreshing) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Error: {error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={loadPopularItems}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView 
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Popular Items</Text>
@@ -128,13 +180,22 @@ const PopularItemsScreen = ({ navigation }) => {
 
         {/* Popular Items List */}
         <View style={styles.content}>
-          <FlatList
-            data={popularItems}
-            renderItem={renderPopularItem}
-            keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.itemsList}
-          />
+          {popularItems.length > 0 ? (
+            <FlatList
+              data={popularItems}
+              renderItem={renderPopularItem}
+              keyExtractor={(item) => item.id}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.itemsList}
+            />
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyStateText}>No popular items found</Text>
+              <Text style={styles.emptyStateSubtext}>
+                Popular items will appear here based on your sales data
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Quick Actions */}
@@ -165,6 +226,57 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666666',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#FF4444',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: '#FF6B35',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyStateText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#666666',
+    marginBottom: 8,
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: '#999999',
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
   header: {
     padding: 20,

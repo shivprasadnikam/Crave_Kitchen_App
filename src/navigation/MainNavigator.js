@@ -1,5 +1,6 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
+import TabNavigator from './TabNavigator';
 
 // Import main screens
 import HomeScreen from '../screens/HomeScreen';
@@ -11,6 +12,7 @@ import AddMenuItemScreen from '../screens/menu/AddMenuItemScreen';
 import EditMenuItemScreen from '../screens/menu/EditMenuItemScreen';
 import MenuPreviewScreen from '../screens/menu/MenuPreviewScreen';
 import CategoryManagementScreen from '../screens/menu/CategoryManagementScreen';
+import MenuAnalyticsScreen from '../screens/menu/MenuAnalyticsScreen';
 
 // Import order screens
 import OrderListScreen from '../screens/orders/OrderListScreen';
@@ -59,17 +61,24 @@ const Stack = createStackNavigator();
 const MainNavigator = () => {
   return (
     <Stack.Navigator
-      initialRouteName="VendorDashboard"
+      initialRouteName="MainTabs"
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#FF6B35',
+          backgroundColor: '#FFFFFF',
         },
-        headerTintColor: '#fff',
+        headerTintColor: '#1F2937',
         headerTitleStyle: {
-          fontWeight: 'bold',
+          fontWeight: '600',
         },
       }}
     >
+      {/* Main Tab Navigator */}
+      <Stack.Screen 
+        name="MainTabs" 
+        component={TabNavigator}
+        options={{ headerShown: false }}
+      />
+      
       {/* Dashboard */}
       <Stack.Screen 
         name="VendorDashboard" 
@@ -112,6 +121,11 @@ const MainNavigator = () => {
         name="CategoryManagement" 
         component={CategoryManagementScreen}
         options={{ title: 'Categories' }}
+      />
+      <Stack.Screen 
+        name="MenuAnalytics" 
+        component={MenuAnalyticsScreen}
+        options={{ title: 'Menu Analytics' }}
       />
 
       {/* Orders */}

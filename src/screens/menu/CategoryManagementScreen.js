@@ -40,7 +40,12 @@ const CategoryManagementScreen = () => {
   const loadCategories = async () => {
     try {
       setLoading(true);
-      const vendorId = user?.vendorProfileId || user?.id || 1;
+      const vendorId = user?.vendorId || user?.id || 1;
+      
+      if (!vendorId) {
+        throw new Error('Vendor ID not found. Please log in again.');
+      }
+      
       const response = await menuCategoriesService.getAllCategories(vendorId);
       
       if (response.success && response.data?.content) {
@@ -73,7 +78,11 @@ const CategoryManagementScreen = () => {
 
     try {
       setSaving(true);
-      const vendorId = user?.vendorProfileId || user?.id || 1;
+      const vendorId = user?.vendorId || user?.id || 1;
+      
+      if (!vendorId) {
+        throw new Error('Vendor ID not found. Please log in again.');
+      }
       
       console.log(`[CATEGORY MANAGEMENT] Creating category with data:`, {
         name: newCategory.name,

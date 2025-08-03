@@ -15,7 +15,7 @@ const FinancialReportsScreen = ({ navigation }) => {
       id: '1',
       title: 'Monthly Revenue Report',
       period: 'January 2024',
-      revenue: '$4,250.00',
+      revenue: '₹4,250.00',
       orders: 156,
       status: 'Available',
     },
@@ -23,7 +23,7 @@ const FinancialReportsScreen = ({ navigation }) => {
       id: '2',
       title: 'Weekly Sales Summary',
       period: 'Week 2, Jan 2024',
-      revenue: '$1,180.50',
+      revenue: '₹1,180.50',
       orders: 42,
       status: 'Available',
     },
@@ -31,7 +31,7 @@ const FinancialReportsScreen = ({ navigation }) => {
       id: '3',
       title: 'Daily Revenue Report',
       period: 'January 15, 2024',
-      revenue: '$245.75',
+      revenue: '₹245.75',
       orders: 8,
       status: 'Available',
     },
@@ -39,7 +39,7 @@ const FinancialReportsScreen = ({ navigation }) => {
       id: '4',
       title: 'Quarterly Financial Summary',
       period: 'Q4 2023',
-      revenue: '$12,450.00',
+      revenue: '₹12,450.00',
       orders: 445,
       status: 'Processing',
     },
@@ -97,7 +97,7 @@ const FinancialReportsScreen = ({ navigation }) => {
         <View style={styles.summarySection}>
           <View style={styles.summaryCard}>
             <Text style={styles.summaryLabel}>Total Revenue</Text>
-            <Text style={styles.summaryAmount}>$18,125.25</Text>
+            <Text style={styles.summaryAmount}>₹18,125.25</Text>
           </View>
           <View style={styles.summaryCard}>
             <Text style={styles.summaryLabel}>Total Orders</Text>
