@@ -4,17 +4,23 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   ScrollView,
+  Alert,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
 import { orderService } from '../../services/orderService';
 
-const OrderDetailScreen = ({ navigation, route }) => {
+const OrderDetailScreen = () => {
+  const navigation = useNavigation();
+  const route = useRoute();
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
-  const orderId = route.params?.orderId || '1';
+  
+  const { orderId } = route.params;
   
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -38,46 +44,175 @@ const OrderDetailScreen = ({ navigation, route }) => {
       }
       
       const orderData = await orderService.getOrderById(orderId, vendorId);
-      setOrder(orderData);
+      console.log(`[ORDER DETAIL] Loaded order details:`, orderData);
       
-      console.log(`[ORDER DETAIL] Loaded order details:`, {
-        orderNumber: orderData.orderNumber,
-        status: orderData.status,
-        itemsCount: orderData.items?.length || 0
-      });
+      setOrder(orderData);
     } catch (error) {
       console.error('[ORDER DETAIL] Error loading order details:', error);
-      setError('Failed to load order details');
+      setError(error.message || 'Failed to load order details');
     } finally {
       setLoading(false);
     }
   };
 
   const onRefresh = async () => {
-    console.log('[ORDER DETAIL] Pull-to-refresh triggered');
     setRefreshing(true);
     await loadOrderDetails();
     setRefreshing(false);
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Pending':
-        return '#FFA500';
-      case 'Preparing':
-        return '#4A90E2';
-      case 'Ready':
-        return '#4CAF50';
-      case 'Completed':
-        return '#666666';
-      default:
-        return '#FF6B35';
+  const handleOrderAction = async (action) => {
+    try {
+      const vendorId = user?.vendorId || user?.id || 1;
+      
+      switch (action) {
+        case 'accept':
+          await orderService.acceptOrder(orderId, vendorId);
+          Alert.alert('Success', 'Order accepted successfully!');
+          break;
+        case 'start_preparing':
+          await orderService.startPreparingOrder(orderId, vendorId);
+          Alert.alert('Success', 'Order preparation started!');
+          break;
+        case 'mark_ready':
+          await orderService.markOrderReady(orderId, vendorId);
+          Alert.alert('Success', 'Order marked as ready!');
+          break;
+        case 'complete':
+          await orderService.completeOrder(orderId, vendorId);
+          Alert.alert('Success', 'Order completed!');
+          break;
+        case 'reject':
+          Alert.prompt(
+            'Reject Order',
+            'Please provide a reason for rejection:',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'Reject',
+                style: 'destructive',
+                onPress: async (reason) => {
+                  await orderService.rejectOrder(orderId, vendorId, reason);
+                  Alert.alert('Success', 'Order rejected!');
+                }
+              }
+            ]
+          );
+          return;
+        default:
+          break;
+      }
+      
+      // Refresh order details after action
+      await loadOrderDetails();
+    } catch (error) {
+      console.error('[ORDER DETAIL] Error performing order action:', error);
+      Alert.alert('Error', error.message || 'Failed to perform action');
     }
   };
 
-  if (loading && !refreshing) {
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'pending':
+        return '#FF9800';
+      case 'accepted':
+        return '#2196F3';
+      case 'preparing':
+        return '#2196F3';
+      case 'ready':
+        return '#FF9800';
+      case 'completed':
+        return '#4CAF50';
+      case 'rejected':
+        return '#F44336';
+      default:
+        return '#666666';
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'pending':
+        return 'Pending';
+      case 'accepted':
+        return 'Accepted';
+      case 'preparing':
+        return 'Preparing';
+      case 'ready':
+        return 'Ready';
+      case 'completed':
+        return 'Completed';
+      case 'rejected':
+        return 'Rejected';
+      default:
+        return status;
+    }
+  };
+
+  const renderOrderActions = () => {
+    if (!order) return null;
+    
+    const actions = [];
+    
+    switch (order.status) {
+      case 'pending':
+        actions.push(
+          { label: 'Accept Order', action: 'accept', color: '#4CAF50' },
+          { label: 'Reject Order', action: 'reject', color: '#F44336' }
+        );
+        break;
+      case 'accepted':
+        actions.push(
+          { label: 'Start Preparing', action: 'start_preparing', color: '#2196F3' }
+        );
+        break;
+      case 'preparing':
+        actions.push(
+          { label: 'Mark Ready', action: 'mark_ready', color: '#FF9800' }
+        );
+        break;
+      case 'ready':
+        actions.push(
+          { label: 'Complete Order', action: 'complete', color: '#4CAF50' }
+        );
+        break;
+    }
+    
+    if (actions.length === 0) return null;
+    
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.actionButtons}>
+        {actions.map((action, index) => (
+          <TouchableOpacity
+            key={index}
+            style={[styles.actionButton, { backgroundColor: action.color }]}
+            onPress={() => handleOrderAction(action.action)}
+          >
+            <Text style={styles.actionButtonText}>{action.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
+  };
+
+  const renderOrderItem = (item, index) => (
+    <View key={index} style={styles.orderItem}>
+      <View style={styles.itemHeader}>
+        <Text style={styles.itemName}>{item.name}</Text>
+        <Text style={styles.itemQuantity}>x{item.quantity}</Text>
+      </View>
+      <Text style={styles.itemPrice}>₹{item.price}</Text>
+      {item.specialInstructions && (
+        <Text style={styles.specialInstructions}>
+          Note: {item.specialInstructions}
+        </Text>
+      )}
+    </View>
+  );
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FF6B35" />
           <Text style={styles.loadingText}>Loading order details...</Text>
@@ -86,9 +221,9 @@ const OrderDetailScreen = ({ navigation, route }) => {
     );
   }
 
-  if (error && !refreshing) {
+  if (error) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Error: {error}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={loadOrderDetails}>
@@ -101,102 +236,146 @@ const OrderDetailScreen = ({ navigation, route }) => {
 
   if (!order) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Order not found</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={loadOrderDetails}>
-            <Text style={styles.retryButtonText}>Retry</Text>
-          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView 
         style={styles.scrollView}
+        contentContainerStyle={{ paddingBottom: 80 + insets.bottom }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
+        showsVerticalScrollIndicator={false}
       >
         {/* Header */}
         <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.backButtonText}>‹ Back</Text>
+          </TouchableOpacity>
           <Text style={styles.headerTitle}>Order Details</Text>
-          <Text style={styles.headerSubtitle}>{order.orderNumber}</Text>
         </View>
 
         {/* Order Status */}
         <View style={styles.statusSection}>
           <View style={[styles.statusBadge, { backgroundColor: getStatusColor(order.status) }]}>
-            <Text style={styles.statusText}>{order.status}</Text>
+            <Text style={styles.statusText}>{getStatusText(order.status)}</Text>
           </View>
+          <Text style={styles.orderNumber}>
+            {order.orderNumber || `Order #${order.id}`}
+          </Text>
         </View>
 
         {/* Customer Information */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Customer Information</Text>
-          <View style={styles.infoCard}>
+          <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Name:</Text>
-            <Text style={styles.infoValue}>{order.customerName}</Text>
-            
-            <Text style={styles.infoLabel}>Phone:</Text>
-            <Text style={styles.infoValue}>{order.customerPhone}</Text>
-            
-            <Text style={styles.infoLabel}>Address:</Text>
-            <Text style={styles.infoValue}>{order.customerAddress}</Text>
+            <Text style={styles.infoValue}>{order.customerName || 'N/A'}</Text>
           </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Phone:</Text>
+            <Text style={styles.infoValue}>{order.customerPhone || 'N/A'}</Text>
+          </View>
+          {order.deliveryAddress && (
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Address:</Text>
+              <Text style={styles.infoValue}>{order.deliveryAddress}</Text>
+            </View>
+          )}
         </View>
 
         {/* Order Items */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Order Items</Text>
-          <View style={styles.itemsCard}>
-            {order.items.map((item, index) => (
-              <View key={index} style={styles.itemRow}>
-                <View style={styles.itemInfo}>
-                  <Text style={styles.itemName}>{item.name}</Text>
-                  <Text style={styles.itemQuantity}>Qty: {item.quantity}</Text>
-                </View>
-                <Text style={styles.itemTotal}>${item.total.toFixed(2)}</Text>
-              </View>
-            ))}
-          </View>
+          {order.items && order.items.length > 0 ? (
+            order.items.map(renderOrderItem)
+          ) : (
+            <Text style={styles.noItemsText}>No items found</Text>
+          )}
         </View>
 
         {/* Order Summary */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Order Summary</Text>
-          <View style={styles.summaryCard}>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Subtotal:</Text>
-              <Text style={styles.summaryValue}>${order.subtotal.toFixed(2)}</Text>
-            </View>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Tax:</Text>
-              <Text style={styles.summaryValue}>${order.tax.toFixed(2)}</Text>
-            </View>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Subtotal:</Text>
+            <Text style={styles.summaryValue}>₹{order.subtotal || order.totalAmount || 0}</Text>
+          </View>
+          {order.deliveryFee && (
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Delivery Fee:</Text>
-              <Text style={styles.summaryValue}>${order.deliveryFee.toFixed(2)}</Text>
+              <Text style={styles.summaryValue}>₹{order.deliveryFee}</Text>
             </View>
-            <View style={[styles.summaryRow, styles.totalRow]}>
-              <Text style={styles.totalLabel}>Total:</Text>
-              <Text style={styles.totalValue}>${order.total.toFixed(2)}</Text>
-            </View>
+          )}
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Total:</Text>
+            <Text style={styles.totalAmount}>₹{order.totalAmount || order.total || 0}</Text>
           </View>
         </View>
 
-        {/* Action Buttons */}
-        <View style={styles.actions}>
-          <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionButtonText}>Update Status</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionButtonText}>Contact Customer</Text>
-          </TouchableOpacity>
+        {/* Order Timeline */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Order Timeline</Text>
+          <View style={styles.timelineItem}>
+            <Text style={styles.timelineTime}>
+              {order.orderTime ? new Date(order.orderTime).toLocaleString() : 'N/A'}
+            </Text>
+            <Text style={styles.timelineText}>Order placed</Text>
+          </View>
+          {order.acceptedAt && (
+            <View style={styles.timelineItem}>
+              <Text style={styles.timelineTime}>
+                {new Date(order.acceptedAt).toLocaleString()}
+              </Text>
+              <Text style={styles.timelineText}>Order accepted</Text>
+            </View>
+          )}
+          {order.preparationStartedAt && (
+            <View style={styles.timelineItem}>
+              <Text style={styles.timelineTime}>
+                {new Date(order.preparationStartedAt).toLocaleString()}
+              </Text>
+              <Text style={styles.timelineText}>Preparation started</Text>
+            </View>
+          )}
+          {order.readyAt && (
+            <View style={styles.timelineItem}>
+              <Text style={styles.timelineTime}>
+                {new Date(order.readyAt).toLocaleString()}
+              </Text>
+              <Text style={styles.timelineText}>Order ready</Text>
+            </View>
+          )}
+          {order.completedAt && (
+            <View style={styles.timelineItem}>
+              <Text style={styles.timelineTime}>
+                {new Date(order.completedAt).toLocaleString()}
+              </Text>
+              <Text style={styles.timelineText}>Order completed</Text>
+            </View>
+          )}
         </View>
+
+        {/* Notes */}
+        {order.notes && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Notes</Text>
+            <Text style={styles.notesText}>{order.notes}</Text>
+          </View>
+        )}
+
+        {/* Action Buttons */}
+        {renderOrderActions()}
       </ScrollView>
     </SafeAreaView>
   );
@@ -205,19 +384,185 @@ const OrderDetailScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F8FAFC',
   },
   scrollView: {
     flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  backButton: {
+    marginRight: 16,
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: '#0EA5E9',
+    fontWeight: '600',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333333',
+  },
+  statusSection: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginBottom: 8,
+  },
+  statusText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  orderNumber: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333333',
+  },
+  section: {
+    backgroundColor: '#FFFFFF',
+    marginTop: 8,
+    padding: 16,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333333',
+    marginBottom: 12,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  infoLabel: {
+    fontSize: 14,
+    color: '#666666',
+    fontWeight: '500',
+  },
+  infoValue: {
+    fontSize: 14,
+    color: '#333333',
+    fontWeight: '600',
+    flex: 1,
+    textAlign: 'right',
+  },
+  orderItem: {
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  itemHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  itemName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333333',
+    flex: 1,
+  },
+  itemQuantity: {
+    fontSize: 14,
+    color: '#666666',
+    fontWeight: '500',
+  },
+  itemPrice: {
+    fontSize: 14,
+    color: '#FF6B35',
+    fontWeight: '600',
+  },
+  specialInstructions: {
+    fontSize: 12,
+    color: '#666666',
+    fontStyle: 'italic',
+    marginTop: 4,
+  },
+  noItemsText: {
+    fontSize: 14,
+    color: '#666666',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  summaryLabel: {
+    fontSize: 14,
+    color: '#666666',
+  },
+  summaryValue: {
+    fontSize: 14,
+    color: '#333333',
+    fontWeight: '600',
+  },
+  totalAmount: {
+    fontSize: 16,
+    color: '#FF6B35',
+    fontWeight: 'bold',
+  },
+  timelineItem: {
+    marginBottom: 12,
+  },
+  timelineTime: {
+    fontSize: 12,
+    color: '#666666',
+    marginBottom: 2,
+  },
+  timelineText: {
+    fontSize: 14,
+    color: '#333333',
+    fontWeight: '500',
+  },
+  notesText: {
+    fontSize: 14,
+    color: '#666666',
+    lineHeight: 20,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    padding: 16,
+    gap: 12,
+  },
+  actionButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  actionButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#F5F5F5',
   },
   loadingText: {
-    marginTop: 16,
-    fontSize: 16,
+    marginTop: 10,
     color: '#666666',
   },
   errorContainer: {
@@ -225,184 +570,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    backgroundColor: '#F5F5F5',
   },
   errorText: {
+    color: '#FF6B35',
     fontSize: 16,
-    color: '#FF4444',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 15,
   },
   retryButton: {
     backgroundColor: '#FF6B35',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
     borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 25,
   },
   retryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  header: {
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333333',
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: '#666666',
-    marginTop: 4,
-  },
-  statusSection: {
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-  },
-  statusBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  statusText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  section: {
-    padding: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333333',
-    marginBottom: 12,
-  },
-  infoCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  infoLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#666666',
-    marginBottom: 4,
-  },
-  infoValue: {
-    fontSize: 16,
-    color: '#333333',
-    marginBottom: 12,
-  },
-  itemsCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  itemRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  itemInfo: {
-    flex: 1,
-  },
-  itemName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333333',
-  },
-  itemQuantity: {
-    fontSize: 14,
-    color: '#666666',
-  },
-  itemTotal: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#FF6B35',
-  },
-  summaryCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  summaryLabel: {
-    fontSize: 16,
-    color: '#666666',
-  },
-  summaryValue: {
-    fontSize: 16,
-    color: '#333333',
-  },
-  totalRow: {
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
-    marginTop: 8,
-    paddingTop: 16,
-  },
-  totalLabel: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
-  },
-  totalValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FF6B35',
-  },
-  actions: {
-    flexDirection: 'row',
-    padding: 20,
-    gap: 12,
-  },
-  actionButton: {
-    flex: 1,
-    backgroundColor: '#FF6B35',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
-  },
-  actionButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
