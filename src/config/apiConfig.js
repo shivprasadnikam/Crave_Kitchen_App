@@ -84,9 +84,27 @@ const ENDPOINTS = {
   // Orders
   ORDERS: {
     LIST: '/api/orders',
-    DETAIL: '/api/orders',
-    UPDATE_STATUS: '/api/orders',
+    DETAIL: (id) => `/api/orders/${id}`,
+    UPDATE_STATUS: (id) => `/api/orders/${id}`,
     HISTORY: '/api/orders/history',
+    
+    // Enhanced Status-Specific Endpoints
+    PENDING: '/api/orders/pending',
+    PREPARING: '/api/orders/preparing',
+    READY: '/api/orders/ready',
+    COMPLETED: '/api/orders/completed',
+    CANCELLED: '/api/orders/cancelled',
+    
+    // Order Actions
+    ACCEPT: (id) => `/api/orders/${id}/accept`,
+    REJECT: (id) => `/api/orders/${id}/reject`,
+    START_PREPARING: (id) => `/api/orders/${id}/start-preparing`,
+    MARK_READY: (id) => `/api/orders/${id}/ready`,
+    COMPLETE: (id) => `/api/orders/${id}/complete`,
+    
+    // Order Search & Filter
+    SEARCH: '/api/orders/search',
+    FILTER: '/api/orders/filter',
   },
   
   // Analytics

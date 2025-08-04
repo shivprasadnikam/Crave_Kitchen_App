@@ -8,63 +8,73 @@ import {
   Alert,
   ActivityIndicator,
   RefreshControl,
+  TextInput,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../../context/AuthContext';
+import { orderService } from '../../services/orderService';
 
 const OrderListScreen = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
   
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     loadOrders();
-  }, []);
+  }, [selectedStatus, searchQuery]);
 
   const loadOrders = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Mock data for now - replace with actual API call
-      const mockOrders = [
-        {
-          id: '1',
-          orderNumber: 'ORD-001',
-          customerName: 'John Doe',
-          items: ['Pizza Margherita', 'Coke'],
-          total: 24.99,
-          status: 'pending',
-          time: '2 minutes ago',
-        },
-        {
-          id: '2',
-          orderNumber: 'ORD-002',
-          customerName: 'Jane Smith',
-          items: ['Chicken Burger', 'Fries'],
-          total: 18.50,
-          status: 'preparing',
-          time: '15 minutes ago',
-        },
-        {
-          id: '3',
-          orderNumber: 'ORD-003',
-          customerName: 'Mike Johnson',
-          items: ['Pasta Carbonara', 'Salad'],
-          total: 22.75,
-          status: 'ready',
-          time: '1 hour ago',
-        },
-      ];
+      const vendorId = user?.vendorId || user?.id || 1;
+      console.log(`[ORDER LIST] Loading orders for vendor: ${vendorId}, status: ${selectedStatus}`);
       
-      setOrders(mockOrders);
+      if (!vendorId) {
+        throw new Error('Vendor ID not found. Please log in again.');
+      }
+      
+      let response;
+      
+      // If there's a search query, use search endpoint
+      if (searchQuery.trim()) {
+        setIsSearching(true);
+        response = await orderService.searchOrders(vendorId, searchQuery.trim());
+        setIsSearching(false);
+      } else if (selectedStatus === 'all') {
+        response = await orderService.getAllOrders(vendorId);
+      } else if (selectedStatus === 'pending') {
+        response = await orderService.getPendingOrders(vendorId);
+      } else if (selectedStatus === 'preparing') {
+        response = await orderService.getPreparingOrders(vendorId);
+      } else if (selectedStatus === 'ready') {
+        response = await orderService.getReadyOrders(vendorId);
+      } else if (selectedStatus === 'completed') {
+        response = await orderService.getCompletedOrders(vendorId);
+      } else if (selectedStatus === 'cancelled') {
+        response = await orderService.getCancelledOrders(vendorId);
+      } else {
+        response = await orderService.getOrdersByStatus(vendorId, selectedStatus);
+      }
+      
+      const ordersData = response.data?.content || [];
+      console.log(`[ORDER LIST] Loaded ${ordersData.length} orders`);
+      
+      setOrders(ordersData);
     } catch (error) {
-      console.error('Error loading orders:', error);
-      setError('Failed to load orders');
+      console.error('[ORDER LIST] Error loading orders:', error);
+      setError(error.message || 'Failed to load orders');
     } finally {
       setLoading(false);
     }
@@ -78,6 +88,60 @@ const OrderListScreen = () => {
 
   const handleOrderPress = (order) => {
     navigation.navigate('OrderDetail', { orderId: order.id });
+  };
+
+  const handleStatusFilter = (status) => {
+    setSelectedStatus(status);
+  };
+
+  const handleOrderAction = async (order, action) => {
+    try {
+      const vendorId = user?.vendorId || user?.id || 1;
+      
+      switch (action) {
+        case 'accept':
+          await orderService.acceptOrder(order.id, vendorId);
+          Alert.alert('Success', 'Order accepted successfully!');
+          break;
+        case 'start_preparing':
+          await orderService.startPreparingOrder(order.id, vendorId);
+          Alert.alert('Success', 'Order preparation started!');
+          break;
+        case 'mark_ready':
+          await orderService.markOrderReady(order.id, vendorId);
+          Alert.alert('Success', 'Order marked as ready!');
+          break;
+        case 'complete':
+          await orderService.completeOrder(order.id, vendorId);
+          Alert.alert('Success', 'Order completed!');
+          break;
+        case 'reject':
+          Alert.prompt(
+            'Reject Order',
+            'Please provide a reason for rejection:',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'Reject',
+                style: 'destructive',
+                onPress: async (reason) => {
+                  await orderService.rejectOrder(order.id, vendorId, reason);
+                  Alert.alert('Success', 'Order rejected!');
+                }
+              }
+            ]
+          );
+          return;
+        default:
+          break;
+      }
+      
+      // Refresh orders after action
+      await loadOrders();
+    } catch (error) {
+      console.error('[ORDER LIST] Error performing order action:', error);
+      Alert.alert('Error', error.message || 'Failed to perform action');
+    }
   };
 
   const getStatusColor = (status) => {
@@ -110,26 +174,130 @@ const OrderListScreen = () => {
     }
   };
 
+  const renderSearchBar = () => (
+    <View style={styles.searchContainer}>
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search orders by customer name, order number..."
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        placeholderTextColor="#999999"
+      />
+      {isSearching && (
+        <ActivityIndicator size="small" color="#0EA5E9" style={styles.searchLoader} />
+      )}
+    </View>
+  );
+
+  const renderStatusFilter = () => (
+    <View style={styles.filterContainer}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {[
+          { key: 'all', label: 'All Orders' },
+          { key: 'pending', label: 'Pending' },
+          { key: 'accepted', label: 'Accepted' },
+          { key: 'preparing', label: 'Preparing' },
+          { key: 'ready', label: 'Ready' },
+          { key: 'completed', label: 'Completed' },
+          { key: 'cancelled', label: 'Cancelled' },
+        ].map((filter) => (
+          <TouchableOpacity
+            key={filter.key}
+            style={[
+              styles.filterButton,
+              selectedStatus === filter.key && styles.filterButtonActive
+            ]}
+            onPress={() => handleStatusFilter(filter.key)}
+          >
+            <Text style={[
+              styles.filterButtonText,
+              selectedStatus === filter.key && styles.filterButtonTextActive
+            ]}>
+              {filter.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </View>
+  );
+
+  const renderOrderActions = (order) => {
+    const actions = [];
+    
+    switch (order.status) {
+      case 'pending':
+        actions.push(
+          { label: 'Accept', action: 'accept', color: '#4CAF50' },
+          { label: 'Reject', action: 'reject', color: '#F44336' }
+        );
+        break;
+      case 'accepted':
+        actions.push(
+          { label: 'Start Preparing', action: 'start_preparing', color: '#2196F3' }
+        );
+        break;
+      case 'preparing':
+        actions.push(
+          { label: 'Mark Ready', action: 'mark_ready', color: '#FF9800' }
+        );
+        break;
+      case 'ready':
+        actions.push(
+          { label: 'Complete', action: 'complete', color: '#4CAF50' }
+        );
+        break;
+    }
+    
+    if (actions.length === 0) return null;
+    
+    return (
+      <View style={styles.actionButtons}>
+        {actions.map((action, index) => (
+          <TouchableOpacity
+            key={index}
+            style={[styles.actionButton, { backgroundColor: action.color }]}
+            onPress={() => handleOrderAction(order, action.action)}
+          >
+            <Text style={styles.actionButtonText}>{action.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
+  };
+
   const renderOrder = ({ item }) => (
-    <TouchableOpacity
-      style={styles.orderCard}
-      onPress={() => handleOrderPress(item)}
-    >
-      <View style={styles.orderHeader}>
-        <Text style={styles.orderNumber}>{item.orderNumber}</Text>
-        <Text style={[styles.orderStatus, { color: getStatusColor(item.status) }]}>
-          {getStatusText(item.status)}
-        </Text>
-      </View>
+    <View style={styles.orderCard}>
+      <TouchableOpacity onPress={() => handleOrderPress(item)}>
+        <View style={styles.orderHeader}>
+          <Text style={styles.orderNumber}>{item.orderNumber || `Order #${item.id}`}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
+            <Text style={styles.statusText}>{getStatusText(item.status)}</Text>
+          </View>
+        </View>
+        
+        <View style={styles.orderInfo}>
+          <Text style={styles.customerName}>{item.customerName || 'Customer'}</Text>
+          <Text style={styles.orderTime}>
+            {item.orderTime ? new Date(item.orderTime).toLocaleTimeString() : 'Recent'}
+          </Text>
+        </View>
+        
+        <View style={styles.orderItems}>
+          <Text style={styles.itemsText}>
+            {item.items ? 
+              (Array.isArray(item.items) ? item.items.join(', ') : item.items) :
+              `${item.totalItems || 0} items`
+            }
+          </Text>
+        </View>
+        
+        <View style={styles.orderFooter}>
+          <Text style={styles.totalAmount}>₹{item.totalAmount || item.total || 0}</Text>
+        </View>
+      </TouchableOpacity>
       
-      <Text style={styles.customerName}>{item.customerName}</Text>
-      <Text style={styles.orderItems}>{item.items.join(', ')}</Text>
-      
-      <View style={styles.orderFooter}>
-        <Text style={styles.orderTotal}>${item.total}</Text>
-        <Text style={styles.orderTime}>{item.time}</Text>
-      </View>
-    </TouchableOpacity>
+      {renderOrderActions(item)}
+    </View>
   );
 
   if (loading) {
@@ -160,24 +328,28 @@ const OrderListScreen = () => {
           </TouchableOpacity>
         </View>
       ) : (
-        <FlatList
-          data={orders}
-          renderItem={renderOrder}
-          keyExtractor={(item) => item.id}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={[styles.ordersList, { paddingBottom: 80 + insets.bottom }]}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-          ListEmptyComponent={() => (
-            <View style={styles.emptyState}>
-                        <Text style={styles.emptyStateText}>No activity found</Text>
-          <Text style={styles.emptyStateSubtext}>
-            New orders and activities will appear here
-          </Text>
-            </View>
-          )}
-        />
+        <>
+          {renderSearchBar()}
+          {renderStatusFilter()}
+          <FlatList
+            data={orders}
+            renderItem={renderOrder}
+            keyExtractor={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={[styles.ordersList, { paddingBottom: 80 + insets.bottom }]}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+            ListEmptyComponent={() => (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyStateText}>No orders found</Text>
+                <Text style={styles.emptyStateSubtext}>
+                  {selectedStatus === 'all' ? 'New orders will appear here' : `No ${selectedStatus} orders found`}
+                </Text>
+              </View>
+            )}
+          />
+        </>
       )}
     </SafeAreaView>
   );
@@ -362,6 +534,76 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666666',
     textAlign: 'center',
+  },
+  filterContainer: {
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  filterButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginHorizontal: 4,
+    borderRadius: 20,
+    backgroundColor: '#F1F5F9',
+  },
+  filterButtonActive: {
+    backgroundColor: '#0EA5E9',
+  },
+  filterButtonText: {
+    fontSize: 14,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  filterButtonTextActive: {
+    color: '#FFFFFF',
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  orderInfo: {
+    marginBottom: 8,
+  },
+  itemsText: {
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 8,
+  },
+  totalAmount: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FF6B35',
+  },
+  searchContainer: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    fontSize: 14,
+    color: '#333333',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  searchLoader: {
+    marginLeft: 8,
   },
 });
 
